@@ -77,7 +77,3 @@ amino_acids.at['K', 'pka_emboss'] = 10.8
 amino_acids.at['R', 'pka_emboss'] = 12.5
 amino_acids.at['N_term', 'pka_emboss'] = 8.6
 amino_acids.at['C_term', 'pka_emboss'] = 3.6
-
-[3.9, np.nan, np.nan, np.nan, 4.412, np.nan,
-           np.nan, np.nan, 7.555, np.nan, np.nan, np.nan, np.nan, 10.85,
-           np.nan, 5.637, 9.052, 11.84, np.nan, np.nan, 8.6, 3.6]
