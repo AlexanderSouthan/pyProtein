@@ -9,31 +9,30 @@ import pandas as pd
 
 amino_acids = pd.DataFrame(
         [], index=['D', 'N', 'T', 'S', 'E', 'Q', 'G', 'A', 'C', 'V', 'M', 'I',
-        'L', 'Y', 'F', 'H', 'K', 'R', 'P', 'W', 'N_term', 'C_term'])
+                   'L', 'Y', 'F', 'H', 'K', 'R', 'P', 'W', 'N_term', 'C_term'])
 
 amino_acids['long_name'] = ['aspartic acid', 'asparagine', 'threonine',
-           'serine', 'glutamic acid', 'glutamine', 'glycine', 'alanine',
-           'cysteine', 'valine', 'methionine', 'isoleucine', 'leucine',
-           'tyrosine', 'phenylalanine', 'histidine', 'lysine', 'arginine',
-           'proline', 'tryptophan', 'N-terminus', 'C-terminus']
-
-amino_acids['long_name'] = ['aspartic acid', 'asparagine', 'threonine',
-           'serine', 'glutamic acid', 'glutamine', 'glycine', 'alanine',
-           'cysteine', 'valine', 'methionine', 'isoleucine', 'leucine',
-           'tyrosine', 'phenylalanine', 'histidine', 'lysine', 'arginine',
-           'proline', 'tryptophan', 'N-terminus', 'C-terminus']
+                            'serine', 'glutamic acid', 'glutamine', 'glycine',
+                            'alanine', 'cysteine', 'valine', 'methionine',
+                            'isoleucine', 'leucine', 'tyrosine',
+                            'phenylalanine', 'histidine', 'lysine', 'arginine',
+                            'proline', 'tryptophan', 'N-terminus',
+                            'C-terminus']
 
 amino_acids['three_letter_code'] = ['Asp', 'Asn', 'Thr', 'Ser', 'Glu', 'Gln',
-           'Gly', 'Ala', 'Cys', 'Val', 'Met', 'Ile', 'Leu', 'Tyr', 'Phe',
-           'His', 'Lys', 'Arg', 'Pro', 'Trp', None, None]
+                                    'Gly', 'Ala', 'Cys', 'Val', 'Met', 'Ile',
+                                    'Leu', 'Tyr', 'Phe', 'His', 'Lys', 'Arg',
+                                    'Pro', 'Trp', None, None]
 
 amino_acids['charge_indicator'] = [-1, 0, 0, 0, -1, 0, 0, 0, -1, 0, 0, 0, 0,
-           -1, 0, 1, 1, 1, 0, 0, 1, -1]
+                                   -1, 0, 1, 1, 1, 0, 0, 1, -1]
 
 amino_acids['molecular_weight'] = [133.1032, 132.1184, 119.1197, 105.0930,
-           147.1299, 146.1451, 75.0669, 89.0935, 121.1590, 117.1469, 149.2124,
-           131.1736, 131.1736, 181.1894, 165.1900, 155.1552, 146.1882,
-           115.1310, 204.2262, 174.2017, np.nan, np.nan]
+                                   147.1299, 146.1451, 75.0669, 89.0935,
+                                   121.1590, 117.1469, 149.2124, 131.1736,
+                                   131.1736, 181.1894, 165.1900, 155.1552,
+                                   146.1882, 115.1310, 204.2262, 174.2017,
+                                   np.nan, np.nan]
 
 
 # according to Bjellqvist et al., Electrophoresis 1994, 15 (1), 529-539.
