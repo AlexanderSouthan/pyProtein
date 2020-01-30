@@ -24,6 +24,9 @@ class polyampholyte:
                 and C- and N-terminus in the order ['D', 'N', 'T', 'S', 'E',
                 'Q', 'G', 'A', 'C', 'V', 'M', 'I', 'L', 'Y', 'F', 'H', 'K',
                 'R', 'P', 'W', 'N_term', 'C_term']
+            sequence: str
+                For mode 'protein', alternative to abundance. Has to bne a
+                string consisting of one letter codes for amino acids.
 
         Returns
         -------
@@ -36,10 +39,8 @@ class polyampholyte:
 
     def initialize_dataset(self):
         """
-        Should transform input data into DataFrame containing amino acid
+        Transforms input data into DataFrame containing amino acid
         abundances, pKa values and charge_indicator of relevant groups.
-        Other modes for example based on the amino acid sequence need to
-        be added.
 
         Currently the only mode is 'protein' with options 'abundance' and
         'sequence'.
