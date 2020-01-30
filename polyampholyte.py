@@ -65,12 +65,12 @@ class polyampholyte:
             
             self.dataset['abundance_norm'] = ( #  normalize to sum to make different inputs comparable
                     self.dataset['abundance_input']/self.dataset['abundance_input'].sum())
-            if 'pKa_data' in self.kwargs:
-                self.pKa_data = self.kwargs.get('pKa_data')
+            if 'pka_data' in self.kwargs:
+                self.pka_data = self.kwargs.get('pka_data')
             else: #  defaults to the following value
-                self.pKa_data = 'pKa_bjellqvist'
+                self.pka_data = 'pka_bjellqvist'
 
-            data_mask = ~self.dataset[self.pKa_data].isna().values
+            data_mask = ~self.dataset[self.pka_data].isna().values
             self.IEP_dataset = self.dataset.iloc[data_mask]
         else:
             raise ValueError('Unknown mode for IEP calculation')
@@ -94,7 +94,7 @@ class polyampholyte:
                         self.IEP_dataset['abundance_norm'].values /
                         (1+10**(self.IEP_dataset['charge_indicator'].values *
                                 (pH-self.IEP_dataset[
-                                        self.pKa_data].values))))
+                                        self.pka_data].values))))
         return charge
 
     def calc_charge_curve(self, range=[0, 14], data_points=100):
@@ -123,7 +123,7 @@ class polyampholyte:
                        self.IEP_dataset['abundance_norm'].values /
                        (1+10**(self.IEP_dataset['charge_indicator'].values *
                                (pH[:, np.newaxis] -
-                                self.IEP_dataset[self.pKa_data].values
+                                self.IEP_dataset[self.pka_data].values
                                 ))), axis=1)
         return np.array([pH, curve])
 
@@ -184,7 +184,7 @@ if __name__ == "__main__":
     
     bovine_serum_albumin = polyampholyte(
             'protein',sequence=bovine_serum_albumin_sequence,
-            pKa_data='pKa_IPC_protein')
+            pka_data='pka_ipc_protein')
 
     pH_range = [0, 14]
     
