@@ -5,7 +5,6 @@ isoelectric point similar to the "ExPASy Compute pI/Mw tool".
 """
 
 import numpy as np
-#import pandas as pd
 from scipy.optimize import brentq
 
 from . import group_properties
@@ -48,7 +47,7 @@ class polyampholyte:
 
         if self.mode == 'protein':
             self.dataset = group_properties.amino_acids.copy()
-            
+
             if 'abundance' in self.kwargs:
                 abundance = self.kwargs.get('abundance')
                 # if less abundance values than entries in amino acid table are
@@ -73,7 +72,7 @@ class polyampholyte:
 
             # normalize abundances to sum to make different inputs comparable
             self.dataset['abundance_norm'] = (
-                    self.dataset['abundance_input']/
+                    self.dataset['abundance_input'] /
                     self.dataset['abundance_input'].sum())
 
             # look for user input for pKa data
@@ -162,6 +161,6 @@ class polyampholyte:
         """
         try:
             IEP = brentq(self.calc_charge, ph_range[0], ph_range[1])
-            return IEP
-        except:
-            return np.nan
+        except ValueError:
+            IEP = np.nan
+        return IEP
