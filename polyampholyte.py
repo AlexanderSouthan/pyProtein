@@ -165,3 +165,23 @@ class polyampholyte:
         except ValueError:
             IEP = np.nan
         return IEP
+
+    def calc_mean_residue_mw(self):
+        """
+        Calculate the mean residue molecular weight of proteins.
+
+        Returns
+        -------
+        mean_residue_mw : float
+            The mean residue molecular weight based on the abundances of amino
+            acids.
+
+        """
+        # identify molecular weight relevant rows in dataset
+        # and select for mean residue molecular weight calculations
+        data_mask = ~self.dataset['molecular_weight'].isna().values
+        mw_dataset = self.dataset.iloc[data_mask]
+        mean_residue_mw = np.sum(
+            mw_dataset['molecular_weight'].values *
+            mw_dataset['abundance_norm'].values)
+        return mean_residue_mw
