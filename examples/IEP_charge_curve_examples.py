@@ -57,7 +57,7 @@ pH_range = [0, 14]
 # Prepare a DataFrame that will hold the results of calculations.
 results = pd.DataFrame([], index=['IEP_pka_bjellqvist', 'IEP_pka_ipc_protein',
                     'IEP_pka_emboss', 'IEP_experimental',
-                    'avg_residue_molar_mass'], columns=[
+                    'avg_residue_molar_mass', 'total_N'], columns=[
                         'Gelatin type A', 'Gelatin type B',
                         'Bovine serum albumin'])
 
@@ -69,7 +69,15 @@ results.at['avg_residue_molar_mass', 'Gelatin type B'] = (
     gelatin_type_b.calc_mean_residue_mw())
 results.at['avg_residue_molar_mass', 'Bovine serum albumin'] = (
     bovine_serum_albumin.calc_mean_residue_mw())
-                        
+
+# Calculate total N content and store them in results DataFrame
+results.at['total_N', 'Gelatin type A'] = (
+    gelatin_type_a.calc_n_content())
+results.at['total_N', 'Gelatin type B'] = (
+    gelatin_type_b.calc_n_content())
+results.at['total_N', 'Bovine serum albumin'] = (
+    bovine_serum_albumin.calc_n_content())
+
 # Put experimental IEP values into results DataFrame.
 results.at['IEP_experimental', 'Gelatin type A'] = 8.8
 results.at['IEP_experimental', 'Gelatin type B'] = 4.9
