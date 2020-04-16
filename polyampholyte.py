@@ -48,6 +48,8 @@ class polyampholyte:
 
         if self.mode == 'protein':
             self.dataset = group_properties.amino_acids.copy()
+            self.amino_acid_sequence = None
+            self.number_of_residues = None
 
             if 'abundance' in self.kwargs:
                 abundance = self.kwargs.get('abundance')
@@ -57,24 +59,28 @@ class polyampholyte:
                         (len(self.dataset.index) - len(abundance)) * [0])
                 self.dataset['abundance_input'] = abundance
             elif 'sequence' in self.kwargs:
-                sequence = self.kwargs.get('sequence')
+                self.amino_acid_sequence = self.kwargs.get('sequence')
                 abundance = []
                 # occurences of the first 20 amino acids in the sequence are
                 # counted, needs to be adapted if more than 20 amino acids such
                 # as hydroxylysine are added
+                self.number_of_residues = len(self.amino_acid_sequence)
                 for key in self.dataset.index[:20]:
-                    abundance.append(sequence.count(key))
-                # N_term and C_term abundances
-                abundance.extend([1, 1])
+                    abundance.append(self.amino_acid_sequence.count(key))
+                # Hyp, Hyl, N_term and C_term abundances
+                abundance.extend([0, 0, 1, 1])
                 self.dataset['abundance_input'] = abundance
             else:
                 raise ValueError(
                         'Unknown or missing input for protein composition.')
 
-            # normalize abundances to sum to make different inputs comparable
+            # Normalize abundances to sum to make different inputs comparable.
+            # C_term and N_term are excluded from the denominator, so their
+            # absolute abundances are transformed to abundance per amino acid
+            # residue.
             self.dataset['abundance_norm'] = (
                     self.dataset['abundance_input'] /
-                    self.dataset['abundance_input'].sum())
+                    np.sum(self.dataset['abundance_input'].values[:-2]))
 
             # look for user input for pKa data
             # else default to 'pka_bjellqvist'
@@ -92,7 +98,7 @@ class polyampholyte:
 
     def calc_charge(self, pH):
         """
-        Calculates the net charge of the polyampholyte at a given pH.
+        Calculate the net charge of the polyampholyte at a given pH.
 
         Parameters
         ----------
@@ -105,6 +111,15 @@ class polyampholyte:
             The net charge of the polyampholyte at the given pH.
 
         """
+        
+        # There might be a problem with the normalized abundances, because
+        # C-term and N_term abundances are not included in the denominator
+        # of normalization. Therefore, the sum of normalized abundances of all
+        # amino acids and the termini is a little larger than one. Must be
+        # checked in the future, also relevant for calc_charge_curve. Probably
+        # especially important for small peptides. Is irrelevant if no amino
+        # acid sequence is given because then the termini are and must be
+        # ignored anyway in the calculations.
         charge = np.sum(self.IEP_dataset['charge_indicator'].values *
                         self.IEP_dataset['abundance_norm'].values /
                         (1+10**(self.IEP_dataset['charge_indicator'].values *
@@ -114,7 +129,7 @@ class polyampholyte:
 
     def calc_charge_curve(self, ph_range=[0, 14], data_points=100):
         """
-        Calculates the charge curve of the polyampholyte in a given
+        Calculate the charge curve of the polyampholyte in a given
         pH range.
 
         Parameters
@@ -144,7 +159,7 @@ class polyampholyte:
 
     def calc_IEP(self, ph_range=[0, 14]):
         """
-        Calculates the isoelectric point (IEP) of the polyampholyte, i.e. the
+        Calculate the isoelectric point (IEP) of the polyampholyte, i.e. the
         pH value with a net charge of zero.
 
         Parameters
@@ -166,9 +181,22 @@ class polyampholyte:
             IEP = np.nan
         return IEP
 
+    def calc_molar_mass(self):
+        assert self.amino_acid_sequence is not None, 'Amino acid sequence is not known'
+        
+        molar_mass = np.sum(
+            self.dataset['abundance_input'] *
+            self.dataset['molar_mass_residue'])
+        return molar_mass
+
     def calc_mean_residue_mw(self):
         """
         Calculate the mean residue molecular weight of proteins.
+
+        Calculation is done without taking C and N terminus into account if
+        only abundances are known and not the entire sequence.
+        If the sequence is known, one C terminus and one N terminus are
+        assumed to be present in the protein.
 
         Returns
         -------
@@ -177,11 +205,37 @@ class polyampholyte:
             acids.
 
         """
-        # identify molecular weight relevant rows in dataset
-        # and select for mean residue molecular weight calculations
-        data_mask = ~self.dataset['molecular_weight'].isna().values
+
+        # identify molar mass relevant rows in dataset
+        # and select for mean residue molar mass calculations
+        data_mask = ~self.dataset['molar_mass_residue'].isna().values
         mw_dataset = self.dataset.iloc[data_mask]
+        
+        # Calculate average molar masses without formally condensed water
+        # during protein formation for each amino acid. So C and N terminus
+        # are neglected in this step.
         mean_residue_mw = np.sum(
-            mw_dataset['molecular_weight'].values *
-            mw_dataset['abundance_norm'].values)
+            mw_dataset['molar_mass_residue'].values[:-2] *
+            mw_dataset['abundance_norm'].values[:-2])
+
+        # Add terminal masses if complete sequence is known, otherwise the
+        # result will not take C and N terminus into account.
+        if self.number_of_residues is not None:
+            mean_residue_mw += np.sum(
+                self.dataset['molar_mass'].values[-2:] *
+                self.dataset['abundance_norm'].values[-2:])
+
         return mean_residue_mw
+
+    def calc_n_content(self):
+        n_content = (
+            np.sum(
+                self.dataset['N_content_residue'] *
+                self.dataset['abundance_norm'] *
+                self.dataset['molar_mass_residue']) /
+            np.sum(
+                self.dataset['abundance_norm'] *
+                self.dataset['molar_mass_residue']
+                )
+            )
+        return n_content

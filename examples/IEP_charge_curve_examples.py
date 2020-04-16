@@ -4,7 +4,7 @@ Demostrates the function by IEP calculation of gelatin type A, gelatin
 type B, bovine serum albumin
 
 Amino acid abundances for gelatin type A and type B as well as
-experimentally determined IEPs taken from
+experimentally determined results taken from
 Sewald et al., Macromol. Biosci. 2018, 18 (12), 1800168.
 DOI: 10.1002/mabi.201800168.
 
@@ -25,11 +25,11 @@ import pyPolyampholyte
 gelatin_type_a = pyPolyampholyte.polyampholyte(
     'protein', abundance=[0.286, 0.158, 0.144, 0.328, 0.469, 0.245, 3.314,
                           1.037, 0, 0.206, 0.06, 0.094, 0.223, 0.033,
-                          0.126, 0.048, 0.325, 0.483, 2.082, 0])
+                          0.126, 0.048, 0.259, 0.483, 1.180, 0, 0.902, 0.066])
 gelatin_type_b = pyPolyampholyte.polyampholyte(
     'protein', abundance=[0.427, 0, 0.154, 0.306, 0.701, 0, 3.248, 1.104,
                           0, 0.201, 0.05, 0.111, 0.238, 0.01, 0.116, 0.038,
-                          0.314, 0.462, 2.046, 0, 0, 0])
+                          0.253, 0.462, 1.075, 0, 0.971, 0.061])
 
 # Define bovine serum albumin via its amino acid sequence.
 bovine_serum_albumin_mature = (
@@ -54,68 +54,78 @@ bovine_serum_albumin = pyPolyampholyte.polyampholyte(
 # second number is the upper limit.
 pH_range = [0, 14]
 
-# Prepare a DataFrame that will hold the results of IEP calculations.
-IEPs = pd.DataFrame([], index=['pka_bjellqvist', 'pka_ipc_protein',
-                    'pka_emboss', 'experimental'], columns=[
+# Prepare a DataFrame that will hold the results of calculations.
+results = pd.DataFrame([], index=['IEP_pka_bjellqvist', 'IEP_pka_ipc_protein',
+                    'IEP_pka_emboss', 'IEP_experimental',
+                    'avg_residue_molar_mass'], columns=[
                         'Gelatin type A', 'Gelatin type B',
                         'Bovine serum albumin'])
 
-# Put experimental values into results DataFrame.
-IEPs.at['experimental', 'Gelatin type A'] = 8.8
-IEPs.at['experimental', 'Gelatin type B'] = 4.9
-IEPs.at['experimental', 'Bovine serum albumin'] = 5.15
+# Calculate average amino acid residue molar masses and store them in results
+# DataFrame
+results.at['avg_residue_molar_mass', 'Gelatin type A'] = (
+    gelatin_type_a.calc_mean_residue_mw())
+results.at['avg_residue_molar_mass', 'Gelatin type B'] = (
+    gelatin_type_b.calc_mean_residue_mw())
+results.at['avg_residue_molar_mass', 'Bovine serum albumin'] = (
+    bovine_serum_albumin.calc_mean_residue_mw())
+                        
+# Put experimental IEP values into results DataFrame.
+results.at['IEP_experimental', 'Gelatin type A'] = 8.8
+results.at['IEP_experimental', 'Gelatin type B'] = 4.9
+results.at['IEP_experimental', 'Bovine serum albumin'] = 5.15
 
-# Calculate the IEPs of the three proteins and write into results DataFrame.
+# Calculate the results of the three proteins and write into results DataFrame.
 # Note that in between the pka_data property is changed to do the calculations
 # based on the different pKa value tables.
-IEPs.at['pka_bjellqvist', 'Gelatin type A'] = round(
+results.at['IEP_pka_bjellqvist', 'Gelatin type A'] = round(
         gelatin_type_a.calc_IEP(ph_range=pH_range), 2)
-IEPs.at['pka_bjellqvist', 'Gelatin type B'] = round(
+results.at['IEP_pka_bjellqvist', 'Gelatin type B'] = round(
         gelatin_type_b.calc_IEP(ph_range=pH_range), 2)
-IEPs.at['pka_bjellqvist', 'Bovine serum albumin'] = round(
+results.at['IEP_pka_bjellqvist', 'Bovine serum albumin'] = round(
         bovine_serum_albumin.calc_IEP(ph_range=pH_range), 2)
 gelatin_type_a.pka_data = 'pka_emboss'
 gelatin_type_b.pka_data = 'pka_emboss'
 bovine_serum_albumin.pka_data = 'pka_emboss'
-IEPs.at['pka_emboss', 'Gelatin type A'] = round(
+results.at['IEP_pka_emboss', 'Gelatin type A'] = round(
         gelatin_type_a.calc_IEP(ph_range=pH_range), 2)
-IEPs.at['pka_emboss', 'Gelatin type B'] = round(
+results.at['IEP_pka_emboss', 'Gelatin type B'] = round(
         gelatin_type_b.calc_IEP(ph_range=pH_range), 2)
-IEPs.at['pka_emboss', 'Bovine serum albumin'] = round(
+results.at['IEP_pka_emboss', 'Bovine serum albumin'] = round(
         bovine_serum_albumin.calc_IEP(ph_range=pH_range), 2)
 gelatin_type_a.pka_data = 'pka_ipc_protein'
 gelatin_type_b.pka_data = 'pka_ipc_protein'
 bovine_serum_albumin.pka_data = 'pka_ipc_protein'
-IEPs.at['pka_ipc_protein', 'Gelatin type A'] = round(
+results.at['IEP_pka_ipc_protein', 'Gelatin type A'] = round(
         gelatin_type_a.calc_IEP(ph_range=pH_range), 2)
-IEPs.at['pka_ipc_protein', 'Gelatin type B'] = round(
+results.at['IEP_pka_ipc_protein', 'Gelatin type B'] = round(
         gelatin_type_b.calc_IEP(ph_range=pH_range), 2)
-IEPs.at['pka_ipc_protein', 'Bovine serum albumin'] = round(
+results.at['IEP_pka_ipc_protein', 'Bovine serum albumin'] = round(
         bovine_serum_albumin.calc_IEP(ph_range=pH_range), 2)
 
 # The rest is just for plotting the results
 
-# Calculate positions of bars grouped by columns of IEPs
+# Calculate positions of bars grouped by columns of results
 positions = []
 pos_counter = 1
-for ii in range(len(IEPs.columns)):
-    for jj in range(len(IEPs.index)):
+for ii in range(len(results.columns)):
+    for jj in range(len(results.index)):
         positions.append(pos_counter)
         pos_counter += 1
     pos_counter += 1
 
 plt.figure(0)
-plt.bar(positions, IEPs.values.T.flatten(), ec='k', fc='skyblue')
+plt.bar(positions, results.values.T.flatten(), ec='k', fc='skyblue')
 plt.ylabel('IEP')
 
 tick_positions = np.mean(np.array(positions).reshape(
-        len(IEPs.columns), len(IEPs.index)), axis=1)
-plt.xticks(tick_positions, IEPs.columns)
+        len(results.columns), len(results.index)), axis=1)
+plt.xticks(tick_positions, results.columns)
 
 # Write used pKa values as text into bars
 for kk, curr_pos in enumerate(positions):
-    plt.text(curr_pos, 0.5, IEPs.index[
-            kk % len(IEPs.index)], {'ha': 'center', 'va': 'bottom'},
+    plt.text(curr_pos, 0.5, results.index[
+            kk % len(results.index)], {'ha': 'center', 'va': 'bottom'},
         rotation=90)
 
 vline_positions = tick_positions[0:-1] + np.diff(tick_positions)/2
