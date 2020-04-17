@@ -79,8 +79,16 @@ class polyampholyte:
             # absolute abundances are transformed to abundance per amino acid
             # residue.
             self.dataset['abundance_norm'] = (
-                    self.dataset['abundance_input'] /
-                    np.sum(self.dataset['abundance_input'].values[:-2]))
+                self.dataset['abundance_input'] /
+                np.sum(self.dataset['abundance_input'].values[:-2]))
+            
+            self.dataset['mass_percent'] = (
+                self.dataset['abundance_input'] *
+                self.dataset['molar_mass'] /
+                np.sum(
+                    self.dataset['abundance_input'] *
+                    self.dataset['molar_mass'])
+                )
 
             # look for user input for pKa data
             # else default to 'pka_bjellqvist'
