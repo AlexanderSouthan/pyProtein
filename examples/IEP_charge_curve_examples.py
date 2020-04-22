@@ -23,15 +23,44 @@ import pyPolyampholyte
 # in mmol/g. Could be any other unit, as long as the relative abundances are
 # correct.
 gelatin_type_a = pyPolyampholyte.polyampholyte(
-    'protein', abundance=[0.286, 0.158, 0.144, 0.328, 0.469, 0.245, 3.314,
+    'protein', mmol_g=[0.286, 0.158, 0.144, 0.328, 0.469, 0.245, 3.314,
                           1.037, 0, 0.206, 0.06, 0.094, 0.223, 0.033,
                           0.126, 0.048, 0.259, 0.483, 1.180, 0, 0.902, 0.066])
 gelatin_type_b = pyPolyampholyte.polyampholyte(
-    'protein', abundance=[0.427, 0, 0.154, 0.306, 0.701, 0, 3.248, 1.104,
+    'protein', mmol_g=[0.427, 0, 0.154, 0.306, 0.701, 0, 3.248, 1.104,
                           0, 0.201, 0.05, 0.111, 0.238, 0.01, 0.116, 0.038,
                           0.253, 0.462, 1.075, 0, 0.971, 0.061])
 
+GbM2 = pyPolyampholyte.polyampholyte(
+    'protein', mmol_g=[0.427, 0, 0.154, 0.306, 0.701, 0, 3.248, 1.104,
+                       0, 0.201, 0.05, 0.111, 0.238, 0.01, 0.116, 0.038,
+                       0.253, 0.462, 1.075, 0, 0.971, 0.061],
+    mod_types=['Methacryl'], mod_abundances = [0.29],
+    mod_sites=['K'])
+
+GbM2A8 = pyPolyampholyte.polyampholyte(
+    'protein', mmol_g=[0.427, 0, 0.154, 0.306, 0.701, 0, 3.248, 1.104,
+                       0, 0.201, 0.05, 0.111, 0.238, 0.01, 0.116, 0.038,
+                       0.253, 0.462, 1.075, 0, 0.971, 0.061],
+    mod_types=['Methacryl', 'Acetyl'], mod_abundances = [0.36, 0.418],
+    mod_sites=['K'])
+
+GbM10 = pyPolyampholyte.polyampholyte(
+    'protein', mmol_g=[0.427, 0, 0.154, 0.306, 0.701, 0, 3.248, 1.104,
+                       0, 0.201, 0.05, 0.111, 0.238, 0.01, 0.116, 0.038,
+                       0.253, 0.462, 1.075, 0, 0.971, 0.061],
+    mod_types=['Methacryl'], mod_abundances = [0.95],
+    mod_sites=['K'])
+
+GbM2A8 = pyPolyampholyte.polyampholyte(
+    'protein', mmol_g=[0.427, 0, 0.154, 0.306, 0.701, 0, 3.248, 1.104,
+                       0, 0.201, 0.05, 0.111, 0.238, 0.01, 0.116, 0.038,
+                       0.253, 0.462, 1.075, 0, 0.971, 0.061],
+    mod_types=['Methacryl', 'Acetyl'], mod_abundances = [0.3, 0.3],
+    mod_sites=['K', 'K'])
+
 # Define bovine serum albumin via its amino acid sequence.
+# DTHKSEIAHRFKDLGEEHFKGLVLIAFSQYLQQCPFDEHVKLVNELTEFAKTCVADESHAGCEKSLHTLFGDELCKVASLRETYGDMADCCEKQEPERNECFLSHKDDSPDLPKLKPDPNTLCDEFKADEKKFWGKYLYEIARRHPYFYAPELLYYANKYNGVFQECCQAEDKGACLLPKIETMREKVLASSARQRLRCASIQKFGERALKAWSVARLSQKFPKAEFVEVTKLVTDLTKVHKECCHGDLLECADDRADLAKYICDNQDTISSKLKECCDKPLLEKSHCIAEVEKDAIPENLPPLTADFAEDKDVCKNYQEAKDAFLGSFLYEYSRRHPEYAVSVLLRLAKEYEATLEECCAKDDPHACYSTVFDKLKHLVDEPQNLIKQNCDQFEKLGEYGFQNALIVRYTRKVPQVSTPTLVEVSRSLGKVGTRCCTKPESERMPCTEDYLSLILNRLCVLHEKTPVSEKVTKCCTESLVNRRPCFSALTPDETYVPKAFDEKLFTFHADICTLPDTEKQIKKQTALVELLKHKPKATEEQLKTVMENFVAFVDKCCAADDKEACFAVEGPKLVVSTQTALA
 bovine_serum_albumin_mature = (
         'DTHKSEIAHRFKDLGEEHFKGLVLI'
         'AFSQYLQQCPFDEHVKLVNELTEFAKTCVADESHAGCEKSLHTLFGDEL'
@@ -48,7 +77,12 @@ bovine_serum_albumin_mature = (
         'ACFAVEGPKLVVSTQTALA')
 bovine_serum_albumin = pyPolyampholyte.polyampholyte(
         'protein', sequence=bovine_serum_albumin_mature,
-        pka_data='pka_bjellqvist')
+        pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
+        mod_abundances = [1, 1])
+bovine_serum_albumin_mod = pyPolyampholyte.polyampholyte(
+        'protein', sequence=bovine_serum_albumin_mature,
+        pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term', 'Methacryl'],
+        mod_abundances = [1, 1, 10], mod_sites=['any','any', 'K'])
 
 # Define the pH range used for calculations. First number is the lower limit,
 # second number is the upper limit.
@@ -64,19 +98,19 @@ results = pd.DataFrame([], index=['IEP_pka_bjellqvist', 'IEP_pka_ipc_protein',
 # Calculate average amino acid residue molar masses and store them in results
 # DataFrame
 results.at['avg_residue_molar_mass', 'Gelatin type A'] = (
-    gelatin_type_a.calc_mean_residue_mw())
+    gelatin_type_a.mean_residue_molar_mass())
 results.at['avg_residue_molar_mass', 'Gelatin type B'] = (
-    gelatin_type_b.calc_mean_residue_mw())
+    gelatin_type_b.mean_residue_molar_mass())
 results.at['avg_residue_molar_mass', 'Bovine serum albumin'] = (
-    bovine_serum_albumin.calc_mean_residue_mw())
+    bovine_serum_albumin.mean_residue_molar_mass())
 
 # Calculate total N content and store them in results DataFrame
 results.at['total_N', 'Gelatin type A'] = (
-    gelatin_type_a.calc_n_content())
+    gelatin_type_a.n_content())
 results.at['total_N', 'Gelatin type B'] = (
-    gelatin_type_b.calc_n_content())
+    gelatin_type_b.n_content())
 results.at['total_N', 'Bovine serum albumin'] = (
-    bovine_serum_albumin.calc_n_content())
+    bovine_serum_albumin.n_content())
 
 # Put experimental IEP values into results DataFrame.
 results.at['IEP_experimental', 'Gelatin type A'] = 8.8
@@ -87,29 +121,29 @@ results.at['IEP_experimental', 'Bovine serum albumin'] = 5.15
 # Note that in between the pka_data property is changed to do the calculations
 # based on the different pKa value tables.
 results.at['IEP_pka_bjellqvist', 'Gelatin type A'] = round(
-        gelatin_type_a.calc_IEP(ph_range=pH_range), 2)
+        gelatin_type_a.IEP(ph_range=pH_range), 2)
 results.at['IEP_pka_bjellqvist', 'Gelatin type B'] = round(
-        gelatin_type_b.calc_IEP(ph_range=pH_range), 2)
+        gelatin_type_b.IEP(ph_range=pH_range), 2)
 results.at['IEP_pka_bjellqvist', 'Bovine serum albumin'] = round(
-        bovine_serum_albumin.calc_IEP(ph_range=pH_range), 2)
+        bovine_serum_albumin.IEP(ph_range=pH_range), 2)
 gelatin_type_a.pka_data = 'pka_emboss'
 gelatin_type_b.pka_data = 'pka_emboss'
 bovine_serum_albumin.pka_data = 'pka_emboss'
 results.at['IEP_pka_emboss', 'Gelatin type A'] = round(
-        gelatin_type_a.calc_IEP(ph_range=pH_range), 2)
+        gelatin_type_a.IEP(ph_range=pH_range), 2)
 results.at['IEP_pka_emboss', 'Gelatin type B'] = round(
-        gelatin_type_b.calc_IEP(ph_range=pH_range), 2)
+        gelatin_type_b.IEP(ph_range=pH_range), 2)
 results.at['IEP_pka_emboss', 'Bovine serum albumin'] = round(
-        bovine_serum_albumin.calc_IEP(ph_range=pH_range), 2)
+        bovine_serum_albumin.IEP(ph_range=pH_range), 2)
 gelatin_type_a.pka_data = 'pka_ipc_protein'
 gelatin_type_b.pka_data = 'pka_ipc_protein'
 bovine_serum_albumin.pka_data = 'pka_ipc_protein'
 results.at['IEP_pka_ipc_protein', 'Gelatin type A'] = round(
-        gelatin_type_a.calc_IEP(ph_range=pH_range), 2)
+        gelatin_type_a.IEP(ph_range=pH_range), 2)
 results.at['IEP_pka_ipc_protein', 'Gelatin type B'] = round(
-        gelatin_type_b.calc_IEP(ph_range=pH_range), 2)
+        gelatin_type_b.IEP(ph_range=pH_range), 2)
 results.at['IEP_pka_ipc_protein', 'Bovine serum albumin'] = round(
-        bovine_serum_albumin.calc_IEP(ph_range=pH_range), 2)
+        bovine_serum_albumin.IEP(ph_range=pH_range), 2)
 
 # The rest is just for plotting the results
 
@@ -117,32 +151,32 @@ results.at['IEP_pka_ipc_protein', 'Bovine serum albumin'] = round(
 positions = []
 pos_counter = 1
 for ii in range(len(results.columns)):
-    for jj in range(len(results.index)):
+    for jj in range(len(results.index)-2):
         positions.append(pos_counter)
         pos_counter += 1
     pos_counter += 1
 
 plt.figure(0)
-plt.bar(positions, results.values.T.flatten(), ec='k', fc='skyblue')
+plt.bar(positions, results.values[:-2].T.flatten(), ec='k', fc='skyblue')
 plt.ylabel('IEP')
 
 tick_positions = np.mean(np.array(positions).reshape(
-        len(results.columns), len(results.index)), axis=1)
+        len(results.columns), len(results.index)-2), axis=1)
 plt.xticks(tick_positions, results.columns)
 
 # Write used pKa values as text into bars
 for kk, curr_pos in enumerate(positions):
     plt.text(curr_pos, 0.5, results.index[
-            kk % len(results.index)], {'ha': 'center', 'va': 'bottom'},
+            kk % (len(results.index)-2)], {'ha': 'center', 'va': 'bottom'},
         rotation=90)
 
 vline_positions = tick_positions[0:-1] + np.diff(tick_positions)/2
 plt.vlines(vline_positions, plt.ylim()[0], plt.ylim()[1], linestyles='--',
            linewidths=1)
 
-charge_curve_typeA = gelatin_type_a.calc_charge_curve(ph_range=pH_range)
-charge_curve_typeB = gelatin_type_b.calc_charge_curve(ph_range=pH_range)
-charge_curve_BSA = bovine_serum_albumin.calc_charge_curve(
+charge_curve_typeA = gelatin_type_a.charge_curve(ph_range=pH_range)
+charge_curve_typeB = gelatin_type_b.charge_curve(ph_range=pH_range)
+charge_curve_BSA = bovine_serum_albumin.charge_curve(
         ph_range=pH_range)
 
 plt.figure(1)
