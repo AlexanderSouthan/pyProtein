@@ -94,7 +94,6 @@ amino_acids.at['K', 'pka_emboss'] = 10.8
 amino_acids.at['R', 'pka_emboss'] = 12.5
 amino_acids.at['Hyl', 'pka_emboss'] = 10.8
 
-
 # Start of data for chain modifications such as end groups (N terminus,
 # C terminus) or side chain modifications
 chain_modifications = pd.DataFrame([], index=['N_term', 'C_term', 'Methacryl',

@@ -18,46 +18,30 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 import pyPolyampholyte
+from protein_compositions import proteins
 
 # Define gelatin type A and gelatine type B via abundance of amino acids given
 # in mmol/g. Could be any other unit, as long as the relative abundances are
 # correct.
 gelatin_type_a = pyPolyampholyte.polyampholyte(
-    'protein', mmol_g=[0.286, 0.158, 0.144, 0.328, 0.469, 0.245, 3.314,
-                          1.037, 0, 0.206, 0.06, 0.094, 0.223, 0.033,
-                          0.126, 0.048, 0.259, 0.483, 1.180, 0, 0.902, 0.066])
+    'protein', mmol_g=proteins['gelatin_type_a']['mmol/g (norm, per residue)'].tolist())
 gelatin_type_b = pyPolyampholyte.polyampholyte(
-    'protein', mmol_g=[0.427, 0, 0.154, 0.306, 0.701, 0, 3.248, 1.104,
-                          0, 0.201, 0.05, 0.111, 0.238, 0.01, 0.116, 0.038,
-                          0.253, 0.462, 1.075, 0, 0.971, 0.061])
+    'protein', mmol_g=proteins['gelatin_type_b']['mmol/g'].tolist())
 
 GbM2 = pyPolyampholyte.polyampholyte(
-    'protein', mmol_g=[0.427, 0, 0.154, 0.306, 0.701, 0, 3.248, 1.104,
-                       0, 0.201, 0.05, 0.111, 0.238, 0.01, 0.116, 0.038,
-                       0.253, 0.462, 1.075, 0, 0.971, 0.061],
-    mod_types=['Methacryl'], mod_abundances = [0.29],
+    'protein', mmol_g=proteins['gelatin_type_b']['mmol/g'].tolist(),
+    mod_types=['Methacryl'], mod_abundances=[0.29],
     mod_sites=['K'])
 
 GbM2A8 = pyPolyampholyte.polyampholyte(
-    'protein', mmol_g=[0.427, 0, 0.154, 0.306, 0.701, 0, 3.248, 1.104,
-                       0, 0.201, 0.05, 0.111, 0.238, 0.01, 0.116, 0.038,
-                       0.253, 0.462, 1.075, 0, 0.971, 0.061],
-    mod_types=['Methacryl', 'Acetyl'], mod_abundances = [0.36, 0.418],
-    mod_sites=['K'])
+    'protein', mmol_g=proteins['gelatin_type_b']['mmol/g'].tolist(),
+    mod_types=['Methacryl', 'Acetyl'], mod_abundances=[0.36, 0.418],
+    mod_sites=['K', 'K'])
 
 GbM10 = pyPolyampholyte.polyampholyte(
-    'protein', mmol_g=[0.427, 0, 0.154, 0.306, 0.701, 0, 3.248, 1.104,
-                       0, 0.201, 0.05, 0.111, 0.238, 0.01, 0.116, 0.038,
-                       0.253, 0.462, 1.075, 0, 0.971, 0.061],
-    mod_types=['Methacryl'], mod_abundances = [0.95],
+    'protein', mmol_g=proteins['gelatin_type_b']['mmol/g'].tolist(),
+    mod_types=['Methacryl'], mod_abundances=[0.95],
     mod_sites=['K'])
-
-GbM2A8 = pyPolyampholyte.polyampholyte(
-    'protein', mmol_g=[0.427, 0, 0.154, 0.306, 0.701, 0, 3.248, 1.104,
-                       0, 0.201, 0.05, 0.111, 0.238, 0.01, 0.116, 0.038,
-                       0.253, 0.462, 1.075, 0, 0.971, 0.061],
-    mod_types=['Methacryl', 'Acetyl'], mod_abundances = [0.3, 0.3],
-    mod_sites=['K', 'K'])
 
 # Define bovine serum albumin via its amino acid sequence.
 # DTHKSEIAHRFKDLGEEHFKGLVLIAFSQYLQQCPFDEHVKLVNELTEFAKTCVADESHAGCEKSLHTLFGDELCKVASLRETYGDMADCCEKQEPERNECFLSHKDDSPDLPKLKPDPNTLCDEFKADEKKFWGKYLYEIARRHPYFYAPELLYYANKYNGVFQECCQAEDKGACLLPKIETMREKVLASSARQRLRCASIQKFGERALKAWSVARLSQKFPKAEFVEVTKLVTDLTKVHKECCHGDLLECADDRADLAKYICDNQDTISSKLKECCDKPLLEKSHCIAEVEKDAIPENLPPLTADFAEDKDVCKNYQEAKDAFLGSFLYEYSRRHPEYAVSVLLRLAKEYEATLEECCAKDDPHACYSTVFDKLKHLVDEPQNLIKQNCDQFEKLGEYGFQNALIVRYTRKVPQVSTPTLVEVSRSLGKVGTRCCTKPESERMPCTEDYLSLILNRLCVLHEKTPVSEKVTKCCTESLVNRRPCFSALTPDETYVPKAFDEKLFTFHADICTLPDTEKQIKKQTALVELLKHKPKATEEQLKTVMENFVAFVDKCCAADDKEACFAVEGPKLVVSTQTALA
@@ -78,11 +62,11 @@ bovine_serum_albumin_mature = (
 bovine_serum_albumin = pyPolyampholyte.polyampholyte(
         'protein', sequence=bovine_serum_albumin_mature,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
-        mod_abundances = [1, 1])
+        mod_abundances=[1, 1])
 bovine_serum_albumin_mod = pyPolyampholyte.polyampholyte(
         'protein', sequence=bovine_serum_albumin_mature,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term', 'Methacryl'],
-        mod_abundances = [1, 1, 10], mod_sites=['any','any', 'K'])
+        mod_abundances=[1, 1, 10], mod_sites=['any','any', 'K'])
 
 # Define the pH range used for calculations. First number is the lower limit,
 # second number is the upper limit.
