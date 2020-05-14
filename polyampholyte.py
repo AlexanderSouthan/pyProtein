@@ -39,7 +39,7 @@ class polyampholyte:
         self.initialize_main_chain()
         self.initialize_modifications()
         self.initialize_pka_dataset()
-        
+
         self.mass_calc_dataset = pd.concat(
             [self.main_chain, self.modifications])[
                 ['molar_mass_residue','N_content_residue', 'abundance_input',
@@ -50,8 +50,8 @@ class polyampholyte:
         Transforms input data into DataFrame containing amino acid
         abundances, pKa values and charge_indicator of relevant groups.
 
-        Currently the only mode is 'protein' with options 'abundance' and
-        'sequence'.
+        Currently the only mode is 'protein' with options 'abundance',
+        'absolute', and 'sequence'.
         """
 
         if self.mode == 'protein':
@@ -62,6 +62,14 @@ class polyampholyte:
             if 'mmol_g' in self.kwargs:
                 self.abundance_unit = 'mmol_g'
                 abundance = self.kwargs.get('mmol_g')
+                # if less abundance values than entries in amino acid table are
+                # given, remaining abundances are set to zero
+                abundance.extend(
+                        (len(self.main_chain.index) - len(abundance)) * [0])
+                self.main_chain['abundance_input'] = abundance
+            elif 'absolute' in self.kwargs:
+                self.abundance_unit = 'abs'
+                abundance = self.kwargs.get('absolute')
                 # if less abundance values than entries in amino acid table are
                 # given, remaining abundances are set to zero
                 abundance.extend(
@@ -117,14 +125,14 @@ class polyampholyte:
         # Absolute modification abundances are transformed to abundance
         # per amino acid residue
         self.modifications['abundance_norm'] = (
-            self.modifications['abundance_input'].values/
+            self.modifications['abundance_input'].values /
             np.sum(self.main_chain['abundance_input'].values))
 
         if self.abundance_unit == 'mmol_g':
             main_chain_fraction = 1 - np.sum(
                 self.modifications['abundance_input']/1000 *
                 self.modifications['molar_mass_residue'])
-            
+
             self.main_chain['abundance_input'] *= main_chain_fraction
 
     def initialize_pka_dataset(self):
@@ -133,7 +141,7 @@ class polyampholyte:
         # acid abundances of relevant amino acids. Then, alle other functions
         # dealing with charges need updating. All other functions dealing with
         # masses are already up to date and work also with modifications.
-        
+
         # look for user input for pKa data
         # else default to 'pka_bjellqvist'
         if 'pka_data' in self.kwargs:
@@ -232,7 +240,7 @@ class polyampholyte:
         return IEP
 
     def molar_mass(self):
-        assert self.amino_acid_sequence is not None, 'Amino acid sequence is not known'
+        assert self.abundance_unit == 'abs', 'Amino acid abundances are not absolute values.'
 
         molar_mass = np.sum(
             self.mass_calc_dataset['abundance_input'].values *
