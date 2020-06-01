@@ -26,13 +26,19 @@ def analyze_sequence(sequence):
 def combine_chains(chains):
     combined_molar_mass = 0
     combined_n = 0
+    combined_hyp = 0
     for curr_chain in chains:
         combined_molar_mass += curr_chain.molar_mass()
         combined_n += curr_chain.n_content() * curr_chain.molar_mass()
+        combined_hyp += (
+            curr_chain.mass_calc_dataset.at['Hyp', 'mass_percent_residue'] *
+            curr_chain.molar_mass())
 
     combined_n_content = combined_n/combined_molar_mass
+    combined_hyp_content = combined_hyp/combined_molar_mass
     
-    return [combined_n_content, 1/combined_n_content, combined_molar_mass]
+    return [combined_n_content, 1/combined_n_content, combined_molar_mass,
+            combined_hyp_content]
 
 # Collagen type I
 col_1_a1_sequence = 'QLSYGYDEKSTGGISVPGPMGPSGPRGLPGPPGAPGPQGFQGPPGEPGEPGASGPMGPRGPPGPPGKNGDDGEAGKPGRPGERGPPGPQGARGLPGTAGLPGMKGHRGFSGLDGAKGDAGPAGPKGEPGSPGENGAPGQMGPRGLPGERGRPGAPGPAGARGNDGATGAAGPPGPTGPAGPPGFPGAVGAKGEAGPQGPRGSEGPQGVRGEPGPPGPAGAAGPAGNPGADGQPGAKGANGAPGIAGAPGFPGARGPSGPQGPGGPPGPKGNSGEPGAPGSKGDTGAKGEPGPVGVQGPPGPAGEEGKRGARGEPGPTGLPGPPGERGGPGSRGFPGADGVAGPKGPAGERGSPGPAGPKGSPGEAGRPGEAGLPGAKGLTGSPGSPGPDGKTGPPGPAGQDGRPGPPGPPGARGQAGVMGFPGPKGAAGEPGKAGERGVPGPPGAVGPAGKDGEAGAQGPPGPAGPAGERGEQGPAGSPGFQGLPGPAGPPGEAGKPGEQGVPGDLGAPGPSGARGERGFPGERGVQGPPGPAGPRGANGAPGNDGAKGDAGAPGAPGSQGAPGLQGMPGERGAAGLPGPKGDRGDAGPKGADGSPGKDGVRGLTGPIGPPGPAGAPGDKGESGPSGPAGPTGARGAPGDRGEPGPPGPAGFAGPPGADGQPGAKGEPGDAGAKGDAGPPGPAGPAGPPGPIGNVGAPGAKGARGSAGPPGATGFPGAAGRVGPPGPSGNAGPPGPPGPAGKEGGKGPRGETGPAGRPGEVGPPGPPGPAGEKGSPGADGPAGAPGTPGPQGIAGQRGVVGLPGQRGERGFPGLPGPSGEPGKQGPSGASGERGPPGPMGPPGLAGPPGESGREGAPGAEGSPGRDGSPGAKGDRGETGPAGPPGAPGAPGAPGPVGPAGKSGDRGETGPAGPTGPVGPVGARGPAGPQGPRGDKGETGEQGDRGIKGHRGFSGLQGPPGPPGSPGEQGPSGASGPAGPRGPPGSAGAPGKDGLNGLPGPIGPPGPRGRTGDAGPVGPPGPPGPPGPPGPPSAGFDFSFLPQPPQEKAHDGGRYYRA'
@@ -190,7 +196,7 @@ laminin_c3 = pyPolyampholyte.polyampholyte(
 
 # Results
 results = pd.DataFrame([], index=['N_content', 'conversion_factor',
-                                  'molar_mass'])
+                                  'molar_mass', 'hydroxyproline_content'])
 
 results['col1_a1'] = combine_chains([col_1_a1])
 results['col1_a2'] = combine_chains([col_1_a2])

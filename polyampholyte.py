@@ -42,8 +42,17 @@ class polyampholyte:
 
         self.mass_calc_dataset = pd.concat(
             [self.main_chain, self.modifications])[
-                ['molar_mass_residue','N_content_residue', 'abundance_input',
+                ['molar_mass_residue', 'N_content_residue', 'abundance_input',
                  'abundance_norm']]
+
+        # the following calculation gives mass percents on residue basis
+        self.mass_calc_dataset['mass_percent_residue'] = (
+            self.mass_calc_dataset['abundance_input'] *
+            self.mass_calc_dataset['molar_mass_residue'] /
+            np.sum(
+                self.mass_calc_dataset['abundance_input'] *
+                self.mass_calc_dataset['molar_mass_residue'])
+            )
 
     def initialize_main_chain(self):
         """
@@ -53,7 +62,6 @@ class polyampholyte:
         Currently the only mode is 'protein' with options 'abundance',
         'absolute', and 'sequence'.
         """
-
         if self.mode == 'protein':
             self.main_chain = group_properties.amino_acids.copy()
             self.amino_acid_sequence = None
@@ -98,13 +106,6 @@ class polyampholyte:
                 self.main_chain['abundance_input'] /
                 np.sum(self.main_chain['abundance_input'].values))
 
-            # self.main_chain['mass_percent'] = (
-            #     self.main_chain['abundance_input'] *
-            #     self.main_chain['molar_mass'] /
-            #     np.sum(
-            #         self.main_chain['abundance_input'] *
-            #         self.main_chain['molar_mass'])
-            #     )
         else:
             raise ValueError('Unknown mode for IEP calculation.')
 
