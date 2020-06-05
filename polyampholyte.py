@@ -25,9 +25,14 @@ class polyampholyte:
                 and C- and N-terminus in the order ['D', 'N', 'T', 'S', 'E',
                 'Q', 'G', 'A', 'C', 'V', 'M', 'I', 'L', 'Y', 'F', 'H', 'K',
                 'R', 'P', 'W', 'Hyp'm 'Hyl']
-            sequence: str
-                For mode 'protein', alternative to abundance. Has to bne a
+            sequence : str
+                For mode 'protein', alternative to mmol_g. Has to be a
                 string consisting of one letter codes for amino acids.
+            absolute : string
+                For mode 'protein', alternative to mmol_g and sequence. Is a
+                list in the same order as for mmol_g, but with absolute
+                abundances of amino acids, e.g. deducted from the sequence or
+                as residues per 1000 residues.
 
         Returns
         -------
@@ -78,6 +83,14 @@ class polyampholyte:
             elif 'absolute' in self.kwargs:
                 self.abundance_unit = 'abs'
                 abundance = self.kwargs.get('absolute')
+                # if less abundance values than entries in amino acid table are
+                # given, remaining abundances are set to zero
+                abundance.extend(
+                        (len(self.main_chain.index) - len(abundance)) * [0])
+                self.main_chain['abundance_input'] = abundance
+            elif 'res_per_1000' in self.kwargs:
+                self.abundance_unit = 'res_per_1000'
+                abundance = self.kwargs.get('res_per_1000')
                 # if less abundance values than entries in amino acid table are
                 # given, remaining abundances are set to zero
                 abundance.extend(
@@ -241,12 +254,15 @@ class polyampholyte:
         return IEP
 
     def molar_mass(self):
-        assert self.abundance_unit == 'abs', 'Amino acid abundances are not absolute values.'
+        # assert self.abundance_unit == 'abs', 'Amino acid abundances are not absolute values.'
 
-        molar_mass = np.sum(
-            self.mass_calc_dataset['abundance_input'].values *
-            self.mass_calc_dataset['molar_mass_residue'].values)
-        return molar_mass
+        if self.abundance_unit == 'abs':
+            molar_mass = np.sum(
+                self.mass_calc_dataset['abundance_input'].values *
+                self.mass_calc_dataset['molar_mass_residue'].values)
+            return molar_mass
+        else:
+            return None
 
     def mean_residue_molar_mass(self):
         """

@@ -24,22 +24,22 @@ from protein_compositions import proteins
 # in mmol/g. Could be any other unit, as long as the relative abundances are
 # correct.
 gelatin_type_a = pyPolyampholyte.polyampholyte(
-    'protein', mmol_g=proteins['gelatin_type_a']['mmol/g (norm, per residue)'].tolist())
+    'protein', mmol_g=proteins['gelatin_type_a_porcine']['mmol/g (norm, per residue)'].tolist())
 gelatin_type_b = pyPolyampholyte.polyampholyte(
-    'protein', mmol_g=proteins['gelatin_type_b']['mmol/g'].tolist())
+    'protein', mmol_g=proteins['gelatin_type_b_bovine']['mmol/g'].tolist())
 
 GbM2 = pyPolyampholyte.polyampholyte(
-    'protein', mmol_g=proteins['gelatin_type_b']['mmol/g'].tolist(),
+    'protein', mmol_g=proteins['gelatin_type_b_bovine']['mmol/g'].tolist(),
     mod_types=['Methacryl'], mod_abundances=[0.29],
     mod_sites=['K'])
 
 GbM2A8 = pyPolyampholyte.polyampholyte(
-    'protein', mmol_g=proteins['gelatin_type_b']['mmol/g'].tolist(),
+    'protein', mmol_g=proteins['gelatin_type_b_bovine']['mmol/g'].tolist(),
     mod_types=['Methacryl', 'Acetyl'], mod_abundances=[0.36, 0.418],
     mod_sites=['K', 'K'])
 
 GbM10 = pyPolyampholyte.polyampholyte(
-    'protein', mmol_g=proteins['gelatin_type_b']['mmol/g'].tolist(),
+    'protein', mmol_g=proteins['gelatin_type_b_bovine']['mmol/g'].tolist(),
     mod_types=['Methacryl'], mod_abundances=[0.95],
     mod_sites=['K'])
 
