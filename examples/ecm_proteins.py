@@ -149,6 +149,14 @@ col_1_a2 = pyPolyampholyte.polyampholyte(
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
 
+# Collagen type I human Uitto 1978
+col_1_hum_uitto_1978 = pyPolyampholyte.polyampholyte(
+        'protein', res_per_1000=[
+            46.3, 0, 20.6, 37.3, 66.6, 0, 326.2, 127.1, 0, 21.6, 7.6, 9.6,
+            26.4, 2.3, 12.8, 3.9, 31.9, 54.7, 131, 0, 98, 9.6],
+        pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
+        mod_abundances=[1, 1])
+
 # Collagen type I bovine uniprot.org
 col_1_a1_bov = pyPolyampholyte.polyampholyte(
         'protein', absolute=col_1_a1_bov_abundances.to_list(),
@@ -221,6 +229,33 @@ col_4_a4_bov = pyPolyampholyte.polyampholyte(
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
 
+# Collagen type IV human, Glanville 1979
+col_4_hum_glanville_1979 = pyPolyampholyte.polyampholyte(
+        'protein', res_per_1000=[
+            48, 0, 18, 34, 77, 0, 318, 31, 0, 30, 15, 34, 54, 5, 24, 6, 5, 20,
+            79, 0, 146, 61],
+        pka_data='pka_bjellqvist')
+
+# Human skin collagen
+skin_collagen_hum_bornstein_1964 = pyPolyampholyte.polyampholyte(
+        'protein', res_per_1000=[
+            45, 0, 17.5, 35.6, 73, 0, 330, 110, 0, 24.4, 6.2, 9.5, 24.3, 2.8,
+            12, 4.8, 26.9, 51, 128, 0, 94.1, 5.8],
+        pka_data='pka_bjellqvist')
+
+
+skin_collagen_hum_acid_miyahara_1978 = pyPolyampholyte.polyampholyte(
+        'protein', res_per_1000=[
+            45.5, 0, 17.5, 35.5, 74.5, 0, 326.9, 105.8, 0, 26.2, 6.5, 12.2,
+            26.3, 4, 12.9, 5.8, 27.6, 53.8, 118.5, 0, 93.4, 6.2],
+        pka_data='pka_bjellqvist')
+
+skin_collagen_hum_age0_miyahara_1978 = pyPolyampholyte.polyampholyte(
+        'protein', res_per_1000=[
+            47.7, 0, 17.5, 36.3, 80.9, 0, 332.4, 110, 1, 24.1, 6.4, 11.9, 24.1,
+            4.4, 12.7, 3.5, 26, 44.2, 120.5, 0, 92.5, 3.9],
+        pka_data='pka_bjellqvist')
+
 # Fibronectin
 fibronectin = pyPolyampholyte.polyampholyte(
         'protein', sequence=fibronectin_sequence,
@@ -285,7 +320,6 @@ results = pd.DataFrame([], index=['N_content', 'conversion_factor',
 results['col1_a1_hum_uniprot'] = combine_chains([col_1_a1])
 results['col1_a2_hum_uniprot'] = combine_chains([col_1_a2])
 results['col3_a1_hum_uniprot'] = combine_chains([col_3_a1])
-results['col3_hum_chung_1974'] = combine_chains([col_3_hum_chung_1974])
 results['col4_a1_hum_uniprot'] = combine_chains([col_4_a1])
 results['col4_a2_hum_uniprot'] = combine_chains([col_4_a2])
 results['col4_a3_hum_uniprot'] = combine_chains([col_4_a3])
@@ -330,6 +364,14 @@ results['laminin-231_hum_uniprot'] = combine_chains([laminin_a2, laminin_b3, lam
 results['laminin-323_hum_uniprot'] = combine_chains([laminin_a3, laminin_b2, laminin_c3])
 results['laminin-423_hum_uniprot'] = combine_chains([laminin_a4, laminin_b2, laminin_c3])
 results['laminin-523_hum_uniprot'] = combine_chains([laminin_a5, laminin_b2, laminin_c3])
+
+results['Collagen_1_hum_uitto_1978'] = combine_chains([col_1_hum_uitto_1978])
+results['Collagen_3_hum_chung_1974'] = combine_chains([col_3_hum_chung_1974])
+results['Collagen_4_hum_glanville_1979'] = combine_chains([col_4_hum_glanville_1979])
+
+results['Skin-Collagen_hum_bornstein_1964'] = combine_chains([skin_collagen_hum_bornstein_1964])
+results['Skin-Collagen_hum_acid_miyahara_1978'] = combine_chains([skin_collagen_hum_acid_miyahara_1978])
+results['Skin-Collagen_hum_age0_miyahara_1978'] = combine_chains([skin_collagen_hum_age0_miyahara_1978])
 
 results = results.T
 results['hydroxyproline_content_hydrolyzed'] = results['hydroxyproline_content_residue']*131.13/113.114

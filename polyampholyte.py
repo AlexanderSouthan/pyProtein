@@ -28,11 +28,13 @@ class polyampholyte:
             sequence : str
                 For mode 'protein', alternative to mmol_g. Has to be a
                 string consisting of one letter codes for amino acids.
-            absolute : string
+            absolute : list of float
                 For mode 'protein', alternative to mmol_g and sequence. Is a
                 list in the same order as for mmol_g, but with absolute
-                abundances of amino acids, e.g. deducted from the sequence or
-                as residues per 1000 residues.
+                abundances of amino acids, e.g. deducted from the sequence.
+            res_per_1000 : list of float
+                For mode 'protein', list in the same order as mmol_g, but
+                abundances normed to 1000 amino acid residues.
 
         Returns
         -------
