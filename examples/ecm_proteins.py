@@ -154,8 +154,7 @@ col_1_hum_uitto_1978 = pyPolyampholyte.polyampholyte(
         'protein', res_per_1000=[
             46.3, 0, 20.6, 37.3, 66.6, 0, 326.2, 127.1, 0, 21.6, 7.6, 9.6,
             26.4, 2.3, 12.8, 3.9, 31.9, 54.7, 131, 0, 98, 9.6],
-        pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
-        mod_abundances=[1, 1])
+        pka_data='pka_bjellqvist')
 
 # Collagen type I bovine uniprot.org
 col_1_a1_bov = pyPolyampholyte.polyampholyte(
@@ -166,6 +165,20 @@ col_1_a2_bov = pyPolyampholyte.polyampholyte(
         'protein', absolute=col_1_a2_bov_abundances.to_list(),
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
+
+# Collagen type I bovine skin Bailey 1976
+col_1_bov_bailey_1976 = pyPolyampholyte.polyampholyte(
+        'protein', res_per_1000=[
+            43, 0, 17, 33, 74, 0, 324, 109, 0, 22, 5, 12, 23, 1.4, 12, 5, 27,
+            51, 130, 0, 100, 9],
+        pka_data='pka_bjellqvist')
+
+# Collagen type III bovine skin Bailey 1976
+col_3_bov_bailey_1976 = pyPolyampholyte.polyampholyte(
+        'protein', res_per_1000=[
+            41, 0, 15, 38, 72, 0, 348, 95, 1.7, 14, 6, 13, 22, 2, 7, 6, 30, 48,
+            112, 0, 122, 7],
+        pka_data='pka_bjellqvist')
 
 # Collagen type III human
 col_3_a1 = pyPolyampholyte.polyampholyte(
@@ -366,6 +379,8 @@ results['laminin-423_hum_uniprot'] = combine_chains([laminin_a4, laminin_b2, lam
 results['laminin-523_hum_uniprot'] = combine_chains([laminin_a5, laminin_b2, laminin_c3])
 
 results['Collagen_1_hum_uitto_1978'] = combine_chains([col_1_hum_uitto_1978])
+results['Collagen_1_bov_bailey_1976'] = combine_chains([col_1_bov_bailey_1976])
+results['Collagen_3_bov_bailey_1976'] = combine_chains([col_3_bov_bailey_1976])
 results['Collagen_3_hum_chung_1974'] = combine_chains([col_3_hum_chung_1974])
 results['Collagen_4_hum_glanville_1979'] = combine_chains([col_4_hum_glanville_1979])
 
