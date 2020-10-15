@@ -62,7 +62,7 @@ bovine_serum_albumin_mature = (
 bovine_serum_albumin = pyPolyampholyte.polyampholyte(
         'protein', sequence=bovine_serum_albumin_mature,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
-        mod_abundances=[1, 1])
+        mod_abundances=[1, 1], pka_scales=['pka_bjellqvist', 'pka_bjellqvist'])
 bovine_serum_albumin_mod = pyPolyampholyte.polyampholyte(
         'protein', sequence=bovine_serum_albumin_mature,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term', 'Methacryl'],
@@ -111,8 +111,11 @@ results.at['IEP_pka_bjellqvist', 'Gelatin type B'] = round(
 results.at['IEP_pka_bjellqvist', 'Bovine serum albumin'] = round(
         bovine_serum_albumin.IEP(ph_range=pH_range), 2)
 gelatin_type_a.pka_data = 'pka_emboss'
+gelatin_type_a.initialize_pka_dataset()
 gelatin_type_b.pka_data = 'pka_emboss'
+gelatin_type_b.initialize_pka_dataset()
 bovine_serum_albumin.pka_data = 'pka_emboss'
+bovine_serum_albumin.initialize_pka_dataset()
 results.at['IEP_pka_emboss', 'Gelatin type A'] = round(
         gelatin_type_a.IEP(ph_range=pH_range), 2)
 results.at['IEP_pka_emboss', 'Gelatin type B'] = round(
@@ -120,8 +123,11 @@ results.at['IEP_pka_emboss', 'Gelatin type B'] = round(
 results.at['IEP_pka_emboss', 'Bovine serum albumin'] = round(
         bovine_serum_albumin.IEP(ph_range=pH_range), 2)
 gelatin_type_a.pka_data = 'pka_ipc_protein'
+gelatin_type_a.initialize_pka_dataset()
 gelatin_type_b.pka_data = 'pka_ipc_protein'
+gelatin_type_b.initialize_pka_dataset()
 bovine_serum_albumin.pka_data = 'pka_ipc_protein'
+bovine_serum_albumin.initialize_pka_dataset()
 results.at['IEP_pka_ipc_protein', 'Gelatin type A'] = round(
         gelatin_type_a.IEP(ph_range=pH_range), 2)
 results.at['IEP_pka_ipc_protein', 'Gelatin type B'] = round(
@@ -156,7 +162,7 @@ for kk, curr_pos in enumerate(positions):
 
 vline_positions = tick_positions[0:-1] + np.diff(tick_positions)/2
 plt.vlines(vline_positions, plt.ylim()[0], plt.ylim()[1], linestyles='--',
-           linewidths=1)
+            linewidths=1)
 
 charge_curve_typeA = gelatin_type_a.charge_curve(ph_range=pH_range)
 charge_curve_typeB = gelatin_type_b.charge_curve(ph_range=pH_range)
