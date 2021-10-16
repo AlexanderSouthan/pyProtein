@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 __pycache__
 /dist/
-/pyPolyampholyte/*.egg-info
+/src/*.egg-info
 pyproject.toml
