@@ -21,7 +21,5 @@ For imformation on how to use it:
 
 ---
 # Requirements
-pyPolyampholyte was tested on Python 3.7.6. Additionally it requires:
-* Numpy (tested on 1.18.1)
-* Pandas (tested on 1.0.0)
-* SciPy (tested on 1.3.2)
+Requirements are listed in the requirements.txt file. Please also click on the
+Travis CI badge to find further details on tested conditions.
