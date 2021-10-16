@@ -8,7 +8,8 @@ Created on Sat Oct 16 19:59:07 2021
 
 import unittest
 
-from pyPolyampholyte.polyampholyte import polyampholyte
+from polyampholyte import polyampholyte
+
 
 class TestIEP(unittest.TestCase):
 
@@ -44,3 +45,7 @@ class TestIEP(unittest.TestCase):
         # expected_output = 1
         # error_message =  "Should sum to 1"
         # self.assertEqual(test_output, expected_output, error_message)
+
+
+if __name__ == '__main__':
+    unittest.main()
