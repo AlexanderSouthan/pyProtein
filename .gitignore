@@ -1,4 +1,4 @@
 # -*- coding: utf-8 -*-
 __pycache__
 /dist/
-/*.egg-info
+/pyPolyampholyte/*.egg-info
