@@ -8,7 +8,7 @@ Created on Sat Oct 16 19:59:07 2021
 
 import unittest
 
-from pyPolyampholyte import polyampholyte
+from src.pyPolyampholyte import polyampholyte
 
 
 class TestIEP(unittest.TestCase):
