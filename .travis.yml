@@ -3,4 +3,9 @@ python:
   - "3.6"
 install: 
   - pip install -r requirements.txt
-script: pytest
+  - pip install codecov
+  - pip install pytest-cov
+script: 
+  - pytest --cov-report=xml --cov=deeptabular tests/
+after-success:
+  - codecov
