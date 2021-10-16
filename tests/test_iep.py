@@ -45,7 +45,3 @@ class TestIEP(unittest.TestCase):
         # expected_output = 1
         # error_message =  "Should sum to 1"
         # self.assertEqual(test_output, expected_output, error_message)
-
-
-if __name__ == '__main__':
-    unittest.main()
