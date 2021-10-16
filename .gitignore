@@ -2,3 +2,4 @@
 __pycache__
 /dist/
 /pyPolyampholyte/*.egg-info
+pyproject.toml
