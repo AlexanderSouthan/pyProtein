@@ -3,10 +3,8 @@ python:
   - "3.6"
 install: 
   - pip install -r requirements.txt
-  - pip install codecov
-  - pip install pytest-cov
-  - pip install .
+  - pip install coverage
 script: 
-  - pytest --cov-report=xml --cov=deeptabular tests/
+  - coverage run -m unittest discover
 after-success:
-  - codecov
+  - bash <(curl -s https://codecov.io/bash)
