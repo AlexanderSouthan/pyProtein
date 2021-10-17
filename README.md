@@ -17,6 +17,7 @@ charge calculation.
 
 For imformation on how to use it:
 * See docstrings.
+* Or look at how the tests are done in the tests folder.
 
 ---
 # Requirements
