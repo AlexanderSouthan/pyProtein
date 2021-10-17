@@ -1,5 +1,5 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Build Status](https://app.travis-ci.com/AlexanderSouthan/pyPolyampholyte.svg?branch=master)](https://app.travis-ci.com/AlexanderSouthan/pyPolyampholyte)
+[![Build Status](https://app.travis-ci.com/AlexanderSouthan/pyProtein.svg?branch=master)](https://app.travis-ci.com/AlexanderSouthan/pyProtein)
 [![codecov](https://codecov.io/gh/AlexanderSouthan/pyPolyampholyte/branch/master/graph/badge.svg?token=ZZ74G67EFQ)](https://codecov.io/gh/AlexanderSouthan/pyPolyampholyte)
 
 # pyProtein
