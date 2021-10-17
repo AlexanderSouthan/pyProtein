@@ -131,11 +131,13 @@ class protein:
 
     def initialize_main_chain(self):
         """
-        Transforms input data into DataFrame containing amino acid
-        abundances, pKa values and charge_indicator of relevant groups.
+        Transform input data into DataFrame.
+
+        Resulting DataFrame contains amino acid abundances, pKa values and
+        charge_indicator of relevant groups.
         """
         self.main_chain = pd.DataFrame(
-            [], index=amino_acid_properties.amino_acids.index)  # amino_acid_properties.amino_acids.copy()
+            [], index=amino_acid_properties.amino_acids.index)
         self.main_chain['molar_mass_residue'] = (
             amino_acid_properties.amino_acids['molar_mass_residue'])
         self.main_chain['N_content_residue'] = (
@@ -170,7 +172,7 @@ class protein:
 
     def initialize_modifications(self):
         self.modifications = pd.DataFrame(
-            [], index=amino_acid_properties.chain_modifications.index)  # amino_acid_properties.chain_modifications.copy()
+            [], index=amino_acid_properties.chain_modifications.index)
         self.modifications['molar_mass_residue'] = (
             amino_acid_properties.chain_modifications['molar_mass_residue'])
         self.modifications['N_content_residue'] = (
@@ -182,8 +184,8 @@ class protein:
         #                                                 self.mod_sites,
         #                                                 self.pka_scales):
         for mod_type, abundance, pka_scale in zip(self.mod_types,
-                                                        self.mod_abundances,
-                                                        self.pka_scales):
+                                                  self.mod_abundances,
+                                                  self.pka_scales):
             self.modifications.at[
                 mod_type, 'abundance_' + self.abundance_unit] = abundance
             # self.modifications.at[mod_type, 'modified_residues'] = site
@@ -202,8 +204,8 @@ class protein:
     def initialize_pka_dataset(self):
         self.IEP_dataset = pd.DataFrame([], index=self.main_chain.index)
         self.IEP_dataset['abundance_norm'] = self.main_chain['abundance_norm']
-        self.IEP_dataset['charge_indicator'] = amino_acid_properties.amino_acids[
-            'charge_indicator']
+        self.IEP_dataset['charge_indicator'] = (
+            amino_acid_properties.amino_acids['charge_indicator'])
         self.IEP_dataset['pka_data'] = amino_acid_properties.amino_acids[
             self.pka_data]
 
@@ -226,7 +228,7 @@ class protein:
 
     def charge(self, pH):
         """
-        Calculate the net charge of the polyampholyte at a given pH.
+        Calculate the net charge of the protein at a given pH.
 
         Parameters
         ----------
@@ -236,10 +238,9 @@ class protein:
         Returns
         -------
         charge : float
-            The net charge of the polyampholyte at the given pH.
+            The net charge of the protein at the given pH.
 
         """
-        
         # There might be a problem with the normalized abundances, because
         # C-term and N_term abundances are not included in the denominator
         # of normalization. Therefore, the sum of normalized abundances of all
@@ -256,8 +257,7 @@ class protein:
 
     def charge_curve(self, ph_range=[0, 14], data_points=100):
         """
-        Calculate the charge curve of the polyampholyte in a given
-        pH range.
+        Calculate the charge curve of the protein in a given pH range.
 
         Parameters
         ----------
@@ -286,8 +286,9 @@ class protein:
 
     def IEP(self, ph_range=[0, 14]):
         """
-        Calculate the isoelectric point (IEP) of the polyampholyte, i.e. the
-        pH value with a net charge of zero.
+        Calculate the isoelectric point (IEP) of the protein.
+
+        The IEP is the pH value at which the protein has net charge of zero.
 
         Parameters
         ----------
@@ -311,7 +312,7 @@ class protein:
     def molar_mass(self, molecule_part='all'):
         """
         Calculate the molar mass of the polyelectrolyte.
-        
+
         Works only in case absolute abundances of the residues/repeating units
         are known, so when the sequence or absolute abundances are given.
 
