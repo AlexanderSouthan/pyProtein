@@ -19,7 +19,13 @@ For imformation on how to use it:
 * See docstrings.
 * Or look at how the tests are done in the tests folder.
 
----
 # Requirements
 Requirements are listed in the requirements.txt file. Please also click on the
 Travis CI badge to find further details on tested conditions.
+
+# Installation
+pyProtein is part of PyPI, so install with:
+
+```
+pip install pyProtein
+```
