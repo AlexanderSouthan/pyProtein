@@ -1,4 +1,4 @@
-![GitHub](https://img.shields.io/github/license/alexandersouthan/pyProtein)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://app.travis-ci.com/AlexanderSouthan/pyProtein.svg?branch=master)](https://app.travis-ci.com/AlexanderSouthan/pyProtein)
 [![codecov](https://codecov.io/gh/AlexanderSouthan/pyProtein/branch/master/graph/badge.svg?token=ZZ74G67EFQ)](https://codecov.io/gh/AlexanderSouthan/pyProtein)
 
