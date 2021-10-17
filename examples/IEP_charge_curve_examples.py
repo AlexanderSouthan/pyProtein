@@ -17,31 +17,31 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-import pyPolyampholyte
+import pyProtein
 from protein_compositions import proteins
 
 # Define gelatin type A and gelatine type B via abundance of amino acids given
 # in mmol/g. Could be any other unit, as long as the relative abundances are
 # correct.
-gelatin_type_a = pyPolyampholyte.polyampholyte(
-    'protein', mmol_g=proteins['gelatin_type_a_porcine']['mmol/g (norm, per residue)'].tolist())
-gelatin_type_b = pyPolyampholyte.polyampholyte(
-    'protein', mmol_g=proteins['gelatin_type_b_bovine']['mmol/g'].tolist())
+gelatin_type_a = pyProtein.protein(
+    'mmol_g', proteins['gelatin_type_a_porcine']['mmol/g (norm, per residue)'].tolist())
+gelatin_type_b = pyProtein.protein(
+    'mmol_g', proteins['gelatin_type_b_bovine']['mmol/g'].tolist())
 
-GbM2 = pyPolyampholyte.polyampholyte(
-    'protein', mmol_g=proteins['gelatin_type_b_bovine']['mmol/g'].tolist(),
-    mod_types=['Methacryl'], mod_abundances=[0.29],
-    mod_sites=['K'])
+# GbM2 = pyProtein.protein(
+#     'mmol_g', mmol_g=proteins['gelatin_type_b_bovine']['mmol/g'].tolist(),
+#     mod_types=['Methacryl'], mod_abundances=[0.29],
+#     mod_sites=['K'])
 
-GbM2A8 = pyPolyampholyte.polyampholyte(
-    'protein', mmol_g=proteins['gelatin_type_b_bovine']['mmol/g'].tolist(),
-    mod_types=['Methacryl', 'Acetyl'], mod_abundances=[0.36, 0.418],
-    mod_sites=['K', 'K'])
+# GbM2A8 = pyProtein.protein(
+#     'mmol_g', mmol_g=proteins['gelatin_type_b_bovine']['mmol/g'].tolist(),
+#     mod_types=['Methacryl', 'Acetyl'], mod_abundances=[0.36, 0.418],
+#     mod_sites=['K', 'K'])
 
-GbM10 = pyPolyampholyte.polyampholyte(
-    'protein', mmol_g=proteins['gelatin_type_b_bovine']['mmol/g'].tolist(),
-    mod_types=['Methacryl'], mod_abundances=[0.95],
-    mod_sites=['K'])
+# GbM10 = pyProtein.protein(
+#     'mmol_g', mmol_g=proteins['gelatin_type_b_bovine']['mmol/g'].tolist(),
+#     mod_types=['Methacryl'], mod_abundances=[0.95],
+#     mod_sites=['K'])
 
 # Define bovine serum albumin via its amino acid sequence.
 # DTHKSEIAHRFKDLGEEHFKGLVLIAFSQYLQQCPFDEHVKLVNELTEFAKTCVADESHAGCEKSLHTLFGDELCKVASLRETYGDMADCCEKQEPERNECFLSHKDDSPDLPKLKPDPNTLCDEFKADEKKFWGKYLYEIARRHPYFYAPELLYYANKYNGVFQECCQAEDKGACLLPKIETMREKVLASSARQRLRCASIQKFGERALKAWSVARLSQKFPKAEFVEVTKLVTDLTKVHKECCHGDLLECADDRADLAKYICDNQDTISSKLKECCDKPLLEKSHCIAEVEKDAIPENLPPLTADFAEDKDVCKNYQEAKDAFLGSFLYEYSRRHPEYAVSVLLRLAKEYEATLEECCAKDDPHACYSTVFDKLKHLVDEPQNLIKQNCDQFEKLGEYGFQNALIVRYTRKVPQVSTPTLVEVSRSLGKVGTRCCTKPESERMPCTEDYLSLILNRLCVLHEKTPVSEKVTKCCTESLVNRRPCFSALTPDETYVPKAFDEKLFTFHADICTLPDTEKQIKKQTALVELLKHKPKATEEQLKTVMENFVAFVDKCCAADDKEACFAVEGPKLVVSTQTALA
@@ -59,14 +59,14 @@ bovine_serum_albumin_mature = (
         'PVSEKVTKCCTESLVNRRPCFSALTPDETYVPKAFDEKLFTFHADICTL'
         'PDTEKQIKKQTALVELLKHKPKATEEQLKTVMENFVAFVDKCCAADDKE'
         'ACFAVEGPKLVVSTQTALA')
-bovine_serum_albumin = pyPolyampholyte.polyampholyte(
-        'protein', sequence=bovine_serum_albumin_mature,
+bovine_serum_albumin = pyProtein.protein(
+        'sequence', bovine_serum_albumin_mature,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1], pka_scales=['pka_bjellqvist', 'pka_bjellqvist'])
-bovine_serum_albumin_mod = pyPolyampholyte.polyampholyte(
-        'protein', sequence=bovine_serum_albumin_mature,
-        pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term', 'Methacryl'],
-        mod_abundances=[1, 1, 10], mod_sites=['any','any', 'K'])
+# bovine_serum_albumin_mod = pyProtein.protein(
+#         'sequence', sequence=bovine_serum_albumin_mature,
+#         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term', 'Methacryl'],
+#         mod_abundances=[1, 1, 10], mod_sites=['any', 'any', 'K'])
 
 # Define the pH range used for calculations. First number is the lower limit,
 # second number is the upper limit.

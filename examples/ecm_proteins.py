@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-import pyPolyampholyte
+import pyProtein
 from protein_compositions import proteins
 
 def analyze_sequence(sequence):
@@ -17,12 +17,12 @@ def analyze_sequence(sequence):
     # occurences of the first 20 amino acids in the sequence are
     # counted, needs to be adapted if more than 20 amino acids such
     # as hydroxylysine are added
-    for key in pyPolyampholyte.group_properties.amino_acids.index[:20]:
+    for key in pyProtein.amino_acid_properties.amino_acids.index[:20]:
         abundance.append(sequence.count(key))
     # Hyp, Hyl abundances
     abundance.extend(
-        (len(pyPolyampholyte.group_properties.amino_acids.index) - len(abundance)) * [0])
-    return pd.Series(abundance, index=pyPolyampholyte.group_properties.amino_acids.index)
+        (len(pyProtein.amino_acid_properties.amino_acids.index) - len(abundance)) * [0])
+    return pd.Series(abundance, index=pyProtein.amino_acid_properties.amino_acids.index)
 
 def combine_chains(chains):
     if len(chains) > 1:
@@ -142,193 +142,193 @@ laminin_c3_sequence = 'AGMGACYDGAGRPQRCLPVFENAAFGRLAQASHTCGSPPEDFCPHVGAAGAGAHCQR
 # Define gelatin type A and gelatine type B via abundance of amino acids given
 # in mmol/g. Could be any other unit, as long as the relative abundances are
 # correct.
-gelatin_type_a = pyPolyampholyte.polyampholyte(
+gelatin_type_a = pyProtein.protein(
     'protein', mmol_g=proteins['gelatin_type_a_porcine']['mmol/g (norm, per residue)'].tolist())
-gelatin_type_b = pyPolyampholyte.polyampholyte(
+gelatin_type_b = pyProtein.protein(
     'protein', mmol_g=proteins['gelatin_type_b_bovine']['mmol/g'].tolist())
 
 # Collagen type I human uniprot.org
-col_1_a1 = pyPolyampholyte.polyampholyte(
+col_1_a1 = pyProtein.protein(
         'protein', absolute=col_1_a1_abundances.to_list(),
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-col_1_a2 = pyPolyampholyte.polyampholyte(
+col_1_a2 = pyProtein.protein(
         'protein', absolute=col_1_a2_abundances.to_list(),
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
 
 # Collagen type I human Uitto 1978
-col_1_hum_uitto_1978 = pyPolyampholyte.polyampholyte(
+col_1_hum_uitto_1978 = pyProtein.protein(
         'protein', res_per_1000=[
             46.3, 0, 20.6, 37.3, 66.6, 0, 326.2, 127.1, 0, 21.6, 7.6, 9.6,
             26.4, 2.3, 12.8, 3.9, 31.9, 54.7, 131, 0, 98, 9.6],
         pka_data='pka_bjellqvist')
 
 # Collagen type I bovine uniprot.org
-col_1_a1_bov = pyPolyampholyte.polyampholyte(
+col_1_a1_bov = pyProtein.protein(
         'protein', absolute=col_1_a1_bov_abundances.to_list(),
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-col_1_a2_bov = pyPolyampholyte.polyampholyte(
+col_1_a2_bov = pyProtein.protein(
         'protein', absolute=col_1_a2_bov_abundances.to_list(),
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
 
 # Collagen type I bovine skin Bailey 1976
-col_1_bov_bailey_1976 = pyPolyampholyte.polyampholyte(
+col_1_bov_bailey_1976 = pyProtein.protein(
         'protein', res_per_1000=[
             43, 0, 17, 33, 74, 0, 324, 109, 0, 22, 5, 12, 23, 1.4, 12, 5, 27,
             51, 130, 0, 100, 9],
         pka_data='pka_bjellqvist')
 
 # Collagen type III bovine skin Bailey 1976
-col_3_bov_bailey_1976 = pyPolyampholyte.polyampholyte(
+col_3_bov_bailey_1976 = pyProtein.protein(
         'protein', res_per_1000=[
             41, 0, 15, 38, 72, 0, 348, 95, 1.7, 14, 6, 13, 22, 2, 7, 6, 30, 48,
             112, 0, 122, 7],
         pka_data='pka_bjellqvist')
 
 # Collagen type III human
-col_3_a1 = pyPolyampholyte.polyampholyte(
+col_3_a1 = pyProtein.protein(
         'protein', absolute=col_3_a1_abundances.to_list(),
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
 
 # Collagen type III bovine
-col_3_a1_bov = pyPolyampholyte.polyampholyte(
+col_3_a1_bov = pyProtein.protein(
         'protein', absolute=col_3_a1_bov_abundances.to_list(),
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
 
 # Collagen type III Chung, Miller 1974
-col_3_hum_chung_1974 = pyPolyampholyte.polyampholyte(
+col_3_hum_chung_1974 = pyProtein.protein(
         'protein', res_per_1000=[42, 0, 13, 39, 71, 0, 350, 96, 2, 14, 8, 13,
                                  22, 3, 8, 6, 30, 46, 107, 0, 125, 5],
         pka_data='pka_bjellqvist')
 
 # Collagen type IV human
-col_4_a1 = pyPolyampholyte.polyampholyte(
+col_4_a1 = pyProtein.protein(
         'protein', absolute=col_4_a1_abundances.to_list(),
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-col_4_a2 = pyPolyampholyte.polyampholyte(
+col_4_a2 = pyProtein.protein(
         'protein', sequence=col_4_a2_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-col_4_a3 = pyPolyampholyte.polyampholyte(
+col_4_a3 = pyProtein.protein(
         'protein', sequence=col_4_a3_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-col_4_a4 = pyPolyampholyte.polyampholyte(
+col_4_a4 = pyProtein.protein(
         'protein', sequence=col_4_a4_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-col_4_a5 = pyPolyampholyte.polyampholyte(
+col_4_a5 = pyProtein.protein(
         'protein', sequence=col_4_a5_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-col_4_a6 = pyPolyampholyte.polyampholyte(
+col_4_a6 = pyProtein.protein(
         'protein', sequence=col_4_a6_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
 
 # Collagen type IV bovine
-col_4_a1_bov = pyPolyampholyte.polyampholyte(
+col_4_a1_bov = pyProtein.protein(
         'protein', absolute=col_4_a1_bov_abundances.to_list(),
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-col_4_a2_bov = pyPolyampholyte.polyampholyte(
+col_4_a2_bov = pyProtein.protein(
         'protein', sequence=col_4_a2_bov_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-col_4_a3_bov = pyPolyampholyte.polyampholyte(
+col_4_a3_bov = pyProtein.protein(
         'protein', absolute=col_4_a3_bov_abundances.to_list(),
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-col_4_a4_bov = pyPolyampholyte.polyampholyte(
+col_4_a4_bov = pyProtein.protein(
         'protein', sequence=col_4_a4_bov_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
 
 # Collagen type IV human, Glanville 1979
-col_4_hum_glanville_1979 = pyPolyampholyte.polyampholyte(
+col_4_hum_glanville_1979 = pyProtein.protein(
         'protein', res_per_1000=[
             48, 0, 18, 34, 77, 0, 318, 31, 0, 30, 15, 34, 54, 5, 24, 6, 5, 20,
             79, 0, 146, 61],
         pka_data='pka_bjellqvist')
 
 # Human skin collagen
-skin_collagen_hum_bornstein_1964 = pyPolyampholyte.polyampholyte(
+skin_collagen_hum_bornstein_1964 = pyProtein.protein(
         'protein', res_per_1000=[
             45, 0, 17.5, 35.6, 73, 0, 330, 110, 0, 24.4, 6.2, 9.5, 24.3, 2.8,
             12, 4.8, 26.9, 51, 128, 0, 94.1, 5.8],
         pka_data='pka_bjellqvist')
 
 
-skin_collagen_hum_acid_miyahara_1978 = pyPolyampholyte.polyampholyte(
+skin_collagen_hum_acid_miyahara_1978 = pyProtein.protein(
         'protein', res_per_1000=[
             45.5, 0, 17.5, 35.5, 74.5, 0, 326.9, 105.8, 0, 26.2, 6.5, 12.2,
             26.3, 4, 12.9, 5.8, 27.6, 53.8, 118.5, 0, 93.4, 6.2],
         pka_data='pka_bjellqvist')
 
-skin_collagen_hum_age0_miyahara_1978 = pyPolyampholyte.polyampholyte(
+skin_collagen_hum_age0_miyahara_1978 = pyProtein.protein(
         'protein', res_per_1000=[
             47.7, 0, 17.5, 36.3, 80.9, 0, 332.4, 110, 1, 24.1, 6.4, 11.9, 24.1,
             4.4, 12.7, 3.5, 26, 44.2, 120.5, 0, 92.5, 3.9],
         pka_data='pka_bjellqvist')
 
 # Fibronectin
-fibronectin = pyPolyampholyte.polyampholyte(
+fibronectin = pyProtein.protein(
         'protein', sequence=fibronectin_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
 
 # Laminin
-laminin_a1 = pyPolyampholyte.polyampholyte(
+laminin_a1 = pyProtein.protein(
         'protein', sequence=laminin_a1_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-laminin_a2 = pyPolyampholyte.polyampholyte(
+laminin_a2 = pyProtein.protein(
         'protein', sequence=laminin_a2_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-laminin_a3 = pyPolyampholyte.polyampholyte(
+laminin_a3 = pyProtein.protein(
         'protein', sequence=laminin_a3_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-laminin_a4 = pyPolyampholyte.polyampholyte(
+laminin_a4 = pyProtein.protein(
         'protein', sequence=laminin_a4_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-laminin_a5 = pyPolyampholyte.polyampholyte(
+laminin_a5 = pyProtein.protein(
         'protein', sequence=laminin_a5_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-laminin_b1 = pyPolyampholyte.polyampholyte(
+laminin_b1 = pyProtein.protein(
         'protein', sequence=laminin_b1_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-laminin_b2 = pyPolyampholyte.polyampholyte(
+laminin_b2 = pyProtein.protein(
         'protein', sequence=laminin_b2_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-laminin_b3 = pyPolyampholyte.polyampholyte(
+laminin_b3 = pyProtein.protein(
         'protein', sequence=laminin_b3_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-laminin_b4 = pyPolyampholyte.polyampholyte(
+laminin_b4 = pyProtein.protein(
         'protein', sequence=laminin_b4_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-laminin_c1 = pyPolyampholyte.polyampholyte(
+laminin_c1 = pyProtein.protein(
         'protein', sequence=laminin_c1_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-laminin_c2 = pyPolyampholyte.polyampholyte(
+laminin_c2 = pyProtein.protein(
         'protein', sequence=laminin_c2_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])
-laminin_c3 = pyPolyampholyte.polyampholyte(
+laminin_c3 = pyProtein.protein(
         'protein', sequence=laminin_c3_sequence,
         pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
         mod_abundances=[1, 1])

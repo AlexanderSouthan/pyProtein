@@ -13,7 +13,7 @@ John Wiley & Sons, Weinheim (Germany), 2007.
 
 import numpy as np
 import pandas as pd
-from pyPolyampholyte.group_properties import amino_acids
+from pyProtein.amino_acid_properties import amino_acids
 
 proteins = {'aa_data': amino_acids}
 proteins['gelatin_type_a_porcine'] = pd.DataFrame([], index=proteins['aa_data'].index)
