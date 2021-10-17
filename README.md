@@ -2,8 +2,8 @@
 [![Build Status](https://app.travis-ci.com/AlexanderSouthan/pyPolyampholyte.svg?branch=master)](https://app.travis-ci.com/AlexanderSouthan/pyPolyampholyte)
 [![codecov](https://codecov.io/gh/AlexanderSouthan/pyPolyampholyte/branch/master/graph/badge.svg?token=ZZ74G67EFQ)](https://codecov.io/gh/AlexanderSouthan/pyPolyampholyte)
 
-# pyPolyampholyte
-pyPolyampholyte does basic calculations on polyampholytes such as polypeptides/
+# pyProtein
+pyProtein does basic calculations on polyampholytes such as polypeptides/
 proteins/enzymes, *e.g.* the isoelectric point similar to *e.g.* the "ExPASy
 Compute pI/Mw tool". Methods are contained in class polyampholyte. Is intended
 to be included into scripts for automated calculations.
