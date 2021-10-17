@@ -8,7 +8,7 @@ Created on Sat Oct 16 19:59:07 2021
 
 import unittest
 
-from src.pyPolyampholyte import polyampholyte
+from src.pyProtein import protein
 
 
 class TestIEP(unittest.TestCase):
@@ -32,7 +32,7 @@ class TestIEP(unittest.TestCase):
                 'PVSEKVTKCCTESLVNRRPCFSALTPDETYVPKAFDEKLFTFHADICTL'
                 'PDTEKQIKKQTALVELLKHKPKATEEQLKTVMENFVAFVDKCCAADDKE'
                 'ACFAVEGPKLVVSTQTALA')
-        bovine_serum_albumin = polyampholyte(
+        bovine_serum_albumin = protein(
                 'protein', sequence=bovine_serum_albumin_mature,
                 pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
                 mod_abundances=[1, 1],

@@ -7,9 +7,9 @@ from scipy.optimize import brentq
 from . import group_properties
 
 
-class polyampholyte:
+class protein:
     """
-    Does basic calculations on polyampholytes such as polypeptides, e.g.
+    Does basic calculations on protein, enzymes and polypeptides, e.g.
     the isoelectric point similar to the "ExPASy Compute pI/Mw tool".
     """
     def __init__(self, mode, **kwargs):
