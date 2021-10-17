@@ -16,7 +16,6 @@ charge calculation.
 * Calculates charge states of polyamphlytes depending on pH values.
 
 For imformation on how to use it:
-* See examples files in examples folder. 
 * See docstrings.
 
 ---
