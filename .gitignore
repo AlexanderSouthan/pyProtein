@@ -3,5 +3,5 @@ __pycache__
 .pylint.d
 /dist/
 /src/*.egg-info
+/examples/
 pyproject.toml
-examples
