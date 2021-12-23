@@ -24,7 +24,8 @@ class protein:
         ----------
         mode : str
             Mode defining how amino acid abundances are passed to the class.
-            Currently can be 'mmol_g', 'sequence', absolute' or 'res_per_1000.
+            Currently can be 'mmol_g', 'sequence', 'absolute' or
+            'res_per_1000'.
         aa_abundances : list or string
             Gives the amino acid abundances in the unit defined by mode.
             Format is as follows:
