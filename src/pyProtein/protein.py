@@ -35,15 +35,15 @@ class protein:
                 'Q', 'G', 'A', 'C', 'V', 'M', 'I', 'L', 'Y', 'F', 'H', 'K',
                 'R', 'P', 'W', 'Hyp'm 'Hyl']
             mode == 'sequence' : str
-                For mode 'protein', alternative to mmol_g. Has to be a
-                string consisting of one letter codes for amino acids.
+                Alternative to mmol_g. Has to be a string consisting of one
+                letter codes for amino acids.
             mode == 'absolute' : list of float or ndarray
-                For mode 'protein', alternative to mmol_g and sequence. Is a
-                list in the same order as for mmol_g, but with absolute
-                abundances of amino acids, e.g. deducted from the sequence.
+                Alternative to mmol_g and sequence. Is a list in the same order
+                as for mmol_g, but with absolute abundances of amino acids,
+                e.g. deducted from the sequence.
             mode == 'res_per_1000' : list of float or ndarray
-                For mode 'protein', list in the same order as mmol_g, but
-                abundances normalized to 1000 amino acid residues.
+                List in the same order as mmol_g, but abundances normalized to
+                1000 amino acid residues.
         pka_data : string, optional
             Gives the pKa dataset used for charge and IEP calculations. Allowed
             values are 'pka_ipc_protein', 'pka_emboss' or 'pka_bjellqvist'.
@@ -59,8 +59,8 @@ class protein:
                 The abundances of the modifications given by mod_types. Must be
                 given in the same units as the input data for the main chain
                 and contain the same amount of elements like mod_types. Default
-                is an empty list. Usually, ist [1, 1] to account for one C
-                terminus and 1 n terminus.
+                is an empty list. Usually, is [1, 1] to account for one C
+                terminus and one N terminus.
             mod_sites : list of strings
                 Currently unused. The plan is:
                 The sites on the main chain which are modified, so allowed
