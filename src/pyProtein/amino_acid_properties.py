@@ -39,6 +39,12 @@ amino_acids['O'] = [4, 3, 3, 3, 4, 3, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2,
 amino_acids['S'] = [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0]
 
+amino_acids['C_residue'] = amino_acids['C']
+amino_acids['H_residue'] = amino_acids['H'] - 2
+amino_acids['N_residue'] = amino_acids['N']
+amino_acids['O_residue'] = amino_acids['O'] - 1
+amino_acids['S_residue'] = amino_acids['S']
+
 amino_acids['molar_mass'] = (
     12.0107 * amino_acids['C'] +
     1.0079 * amino_acids['H'] +
@@ -49,8 +55,12 @@ amino_acids['molar_mass'] = (
 amino_acids['N_content'] = (
     14.0067 * amino_acids['N'] / amino_acids['molar_mass'])
 
-amino_acids['molar_mass_residue'] = (amino_acids['molar_mass'] -
-                                     2*1.0079 - 15.9994)
+amino_acids['molar_mass_residue'] = (
+    12.0107 * amino_acids['C_residue'] +
+    1.0079 * amino_acids['H_residue'] +
+    14.0067 * amino_acids['N_residue'] +
+    15.9994 * amino_acids['O_residue'] +
+    32.065 * amino_acids['S_residue'])
 
 amino_acids['N_content_residue'] = (
     14.0067 * amino_acids['N'] / amino_acids['molar_mass_residue'])
