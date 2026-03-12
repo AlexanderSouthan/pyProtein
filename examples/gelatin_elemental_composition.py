@@ -6,54 +6,40 @@ Created on Tue Mar 10 13:47:49 2026
 """
 
 
+import numpy as np
 import pandas as pd
 from pyProtein import amino_acids as gelatin_amino_acids
+from pyProtein import protein
 
-# write gelatin amino acid abundances into amino acid table
-gelatin_amino_acids.at['A', 'per1000'] = 117 # alanine
-gelatin_amino_acids.at['R', 'per1000'] = 48 # arginine
-gelatin_amino_acids.at['N', 'per1000'] = 0 # asparagine
-gelatin_amino_acids.at['D', 'per1000'] = 46 # aspartic acid
-gelatin_amino_acids.at['C', 'per1000'] = 0 # cysteine
-gelatin_amino_acids.at['E', 'per1000'] = 72 # glutamic acid
-gelatin_amino_acids.at['Q', 'per1000'] = 0 # glutamine
-gelatin_amino_acids.at['G', 'per1000'] = 335 # glycine
-gelatin_amino_acids.at['H', 'per1000'] = 4.2 # histidine
-gelatin_amino_acids.at['Hyp', 'per1000'] = 93 # hydroxyproline
-gelatin_amino_acids.at['Hyl', 'per1000'] = 4.3 # hydroxylysine
-gelatin_amino_acids.at['I', 'per1000'] = 11 # isoleucine
-gelatin_amino_acids.at['L', 'per1000'] = 24.3 # leucine
-gelatin_amino_acids.at['K', 'per1000'] = 28 # lysine
-gelatin_amino_acids.at['M', 'per1000'] = 3.9 # methionine
-gelatin_amino_acids.at['F', 'per1000'] = 14 # phenylalanine
-gelatin_amino_acids.at['P', 'per1000'] = 124 # proline
-gelatin_amino_acids.at['S', 'per1000'] = 33 # serine
-gelatin_amino_acids.at['T', 'per1000'] = 18 # threonine
-gelatin_amino_acids.at['W', 'per1000'] = 0 # tryptophan
-gelatin_amino_acids.at['Y', 'per1000'] = 1.2 # tyrosine
-gelatin_amino_acids.at['V', 'per1000'] = 22 # valine
+# order of amino acid abundances:
+# ['D', 'N', 'T', 'S', 'E',
+# 'Q', 'G', 'A', 'C', 'V', 'M', 'I', 'L', 'Y', 'F', 'H', 'K',
+# 'R', 'P', 'W', 'Hyp'm 'Hyl']
 
+gel_b_handbook = protein(
+    'res_per_1000',
+    [46, 0, 18, 33, 72, 0, 335, 117, 0, 22, 3.9, 11, 24.3, 1.2, 14, 4.2, 28, 48, 124, 0, 93, 4.3])
 
-# multiply amino acid abundances with number of the different atoms in amino acids
-gelatin_amino_acids['total_c_per1000'] = gelatin_amino_acids['per1000'] * gelatin_amino_acids['C']
-gelatin_amino_acids['total_h_per1000'] = gelatin_amino_acids['per1000'] * gelatin_amino_acids['H']
-gelatin_amino_acids['total_n_per1000'] = gelatin_amino_acids['per1000'] * gelatin_amino_acids['N']
-gelatin_amino_acids['total_o_per1000'] = gelatin_amino_acids['per1000'] * gelatin_amino_acids['O']
-gelatin_amino_acids['total_s_per1000'] = gelatin_amino_acids['per1000'] * gelatin_amino_acids['S']
+gel_b_sewald = protein(
+    'res_per_1000',
+    [45, 0, 16, 32, 74, 0, 341, 116, 0, 21, 5, 12, 25, 1, 12, 4, 27, 48, 113, 0, 102, 6])
 
+gel_b_sewald_mmol = protein(
+    'mmol_g',
+    np.array([0.4968341550984979, 0.0, 0.17665214403502147, 0.35330428807004294, 
+     0.8170161661619744, 0.0, 3.7648988197463953, 1.2807280442539057, 0.0,
+    0.23185593904596571, 0.05520379501094421, 0.13248910802626612,
+    0.27601897505472106, 0.011040759002188842, 0.13248910802626612,
+    0.04416303600875537, 0.29810049305909875, 0.5299564321050645,
+    1.247605767247339, 0.0, 1.1261574182232619, 0.06624455401313306])*0.9796,
+    mod_types=['methacryl'], mod_abundances=[0.3])
 
-# sum up the number of different atoms for all amino acids
-gelatin_elemental_composition = pd.DataFrame( # in total number per 1000 residues
-    [gelatin_amino_acids['total_c_per1000'].sum(),
-     gelatin_amino_acids['total_h_per1000'].sum(),
-     gelatin_amino_acids['total_n_per1000'].sum(),
-     gelatin_amino_acids['total_o_per1000'].sum(),
-     gelatin_amino_acids['total_s_per1000'].sum()],
-    index=['C', 'H', 'N', 'O', 'S'], columns=['atom count'])
+gel_b_sewald_mod = protein(
+    'res_per_1000',
+    [45, 0, 16, 32, 74, 0, 341, 116, 0, 21, 5, 12, 25, 1, 12, 4, 27, 48, 113, 0, 102, 6],
+    mod_types=['methacryl'], mod_abundances=[33])
 
-
-gelatin_elemental_composition['molar mass [g/mol]'] = [12.011, 1.008, 14.007, 15.999, 32.07]
-gelatin_elemental_composition['relative element masses'] = (
-    gelatin_elemental_composition['atom count'] *
-    gelatin_elemental_composition['molar mass [g/mol]'])
-total_mass = gelatin_elemental_composition['relative element masses'].sum()
+print('Gelatin type B (handbook)\n', gel_b_handbook.elemental_composition())
+print('Gelatin type B (Sewald)\n', gel_b_sewald.elemental_composition())
+A = gel_b_sewald_mod.elemental_composition()
+print('Gelatin type B (Sewald) modified\n', A)
