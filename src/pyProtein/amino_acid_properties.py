@@ -7,6 +7,10 @@ import numpy as np
 import pandas as pd
 
 
+# atom masses used for molar mass and mass fraction calculations
+atom_masses = pd.Series([12.0107, 1.0079, 14.0067, 15.9994, 32.065],
+                        index=['C', 'H', 'N', 'O', 'S'])
+
 # Start of amino acid data.
 amino_acids = pd.DataFrame(
         [], index=['D', 'N', 'T', 'S', 'E', 'Q', 'G', 'A', 'C', 'V', 'M', 'I',
@@ -45,25 +49,19 @@ amino_acids['N_residue'] = amino_acids['N']
 amino_acids['O_residue'] = amino_acids['O'] - 1
 amino_acids['S_residue'] = amino_acids['S']
 
-amino_acids['molar_mass'] = (
-    12.0107 * amino_acids['C'] +
-    1.0079 * amino_acids['H'] +
-    14.0067 * amino_acids['N'] +
-    15.9994 * amino_acids['O'] +
-    32.065 * amino_acids['S'])
+amino_acids['molar_mass'] = (amino_acids[atom_masses.index]*atom_masses).sum(
+    axis=1)
 
 amino_acids['N_content'] = (
-    14.0067 * amino_acids['N'] / amino_acids['molar_mass'])
+    atom_masses['N'] * amino_acids['N'] / amino_acids['molar_mass'])
 
 amino_acids['molar_mass_residue'] = (
-    12.0107 * amino_acids['C_residue'] +
-    1.0079 * amino_acids['H_residue'] +
-    14.0067 * amino_acids['N_residue'] +
-    15.9994 * amino_acids['O_residue'] +
-    32.065 * amino_acids['S_residue'])
+    amino_acids[['C_residue', 'H_residue', 'N_residue', 'O_residue', 'S_residue']].rename(
+        columns={'C_residue': 'C', 'H_residue': 'H', 'N_residue': 'N', 'O_residue': 'O', 'S_residue': 'S'}
+        )*atom_masses).sum(axis=1)
 
 amino_acids['N_content_residue'] = (
-    14.0067 * amino_acids['N'] / amino_acids['molar_mass_residue'])
+    atom_masses['N'] * amino_acids['N'] / amino_acids['molar_mass_residue'])
 
 # according to Bjellqvist et al., Electrophoresis 1994, 15 (1), 529-539.
 # DOI: 10.1002/elps.1150150171.
@@ -117,16 +115,7 @@ chain_modifications['C'] = [0, 0]  # , 4, 2]
 chain_modifications['H'] = [1, 1]  # , 4, 2]
 chain_modifications['N'] = [0, 0]  # , 0, 0]
 chain_modifications['O'] = [0, 1]  # , 1, 1]
-
-chain_modifications['molar_mass_residue'] = (
-    12.0107 * chain_modifications['C'] +
-    1.0079 * chain_modifications['H'] +
-    14.0067 * chain_modifications['N'] +
-    15.9994 * chain_modifications['O'])
-
-chain_modifications['N_content_residue'] = (
-    14.0067 * chain_modifications['N'] / chain_modifications[
-        'molar_mass_residue'])
+chain_modifications['S'] = [0, 0]  # , 1, 1]
 
 chain_modifications['pka_bjellqvist'] = np.nan
 chain_modifications.at['N_term', 'pka_bjellqvist'] = 7.5
@@ -144,3 +133,19 @@ chain_modifications.at['C_term', 'pka_emboss'] = 3.6
 # future. Currently it only makes sure that if no valid pKa scale is geven for
 # C and N terminus, they are ignored.
 chain_modifications['pka_other'] = np.nan
+
+# give composition of methacryl modifications
+chain_modifications.at['methacryl', 'long_name'] = 'methacryl'
+chain_modifications.at['methacryl', 'C'] = 4
+chain_modifications.at['methacryl', 'H'] = 4 # 5 from methacryl - 1 due to loss during modification
+chain_modifications.at['methacryl', 'N'] = 0
+chain_modifications.at['methacryl', 'O'] = 1
+chain_modifications.at['methacryl', 'S'] = 0
+
+
+chain_modifications['molar_mass_residue'] = (
+    chain_modifications[atom_masses.index]*atom_masses).sum(axis=1)
+
+chain_modifications['N_content_residue'] = (
+    atom_masses['N'] * chain_modifications['N'] / chain_modifications[
+        'molar_mass_residue'])
