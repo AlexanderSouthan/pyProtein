@@ -127,8 +127,20 @@ class protein:
 
         self.initialize_main_chain()
         self.initialize_modifications()
-        # self.combine_main_chain_modifications()
         self.initialize_pka_dataset()
+
+        # convert abundance_norm into mmol/g taking into account the modifications
+        main_chain_mass = (self.main_chain['abundance_norm'] *
+                           self.main_chain['molar_mass_residue']).sum()
+        mod_mass = (self.modifications['abundance_norm'] *
+                    self.modifications['molar_mass_residue']).sum()
+        total_mass = main_chain_mass + mod_mass
+        self.main_chain['abundance_total_mmol_g'] = (
+            self.main_chain['abundance_norm']/total_mass*1000
+            )
+        self.modifications['abundance_total_mmol_g'] = (
+            self.modifications['abundance_norm']/total_mass*1000
+            )
 
     def initialize_main_chain(self):
         """
@@ -152,6 +164,7 @@ class protein:
                      len(self.abundance)) * [0])
             self.main_chain[
                 'abundance_' + self.abundance_unit] = self.abundance
+
         elif self.abundance_unit == 'sequence':
             # occurences of the first 20 amino acids in the sequence are
             # counted, needs to be adapted if more than 20 amino acids such
@@ -312,7 +325,7 @@ class protein:
 
     def molar_mass(self, molecule_part='all'):
         """
-        Calculate the molar mass of the polyelectrolyte.
+        Calculate the molar mass of the protein.
 
         Works only in case absolute abundances of the residues/repeating units
         are known, so when the sequence or absolute abundances are given.
@@ -445,3 +458,95 @@ class protein:
             raise ValueError('No valid value given for molecule_part. '
                              'Allowed values are {}, but \'{}\' was given'
                              '.'.format(allowed_parts, molecule_part))
+
+    def elemental_composition(self, molecule_part='all'):
+        element_count = {}
+        element_count['main_chain'] = pd.DataFrame(
+            [], index=amino_acid_properties.amino_acids.index)
+        element_count['mods'] = pd.DataFrame(
+            [], index=amino_acid_properties.chain_modifications.index)
+        
+        # calculate the normalized atom numbers for the main chain residues
+        element_count['main_chain']['C'] = (
+            self.main_chain['abundance_norm'] *
+            amino_acid_properties.amino_acids['C_residue'])
+        element_count['main_chain']['H'] = (
+            self.main_chain['abundance_norm'] * 
+            amino_acid_properties.amino_acids['H_residue'])
+        element_count['main_chain']['N'] = (
+            self.main_chain['abundance_norm'] * 
+            amino_acid_properties.amino_acids['N_residue'])
+        element_count['main_chain']['O'] = (
+            self.main_chain['abundance_norm'] * 
+            amino_acid_properties.amino_acids['O_residue'])
+        element_count['main_chain']['S'] = (
+            self.main_chain['abundance_norm'] * 
+            amino_acid_properties.amino_acids['S_residue'])
+        
+        # calculate the normalized atom numbers for the modification types
+        element_count['mods']['C'] = (
+            self.modifications['abundance_norm'] *
+            amino_acid_properties.chain_modifications['C'])
+        element_count['mods']['H'] = (
+            self.modifications['abundance_norm'] * 
+            amino_acid_properties.chain_modifications['H'])
+        element_count['mods']['N'] = (
+            self.modifications['abundance_norm'] * 
+            amino_acid_properties.chain_modifications['N'])
+        element_count['mods']['O'] = (
+            self.modifications['abundance_norm'] * 
+            amino_acid_properties.chain_modifications['O'])
+        element_count['mods'].dropna(inplace=True)
+
+        # calculate the aggregates for main chain and modification atom numbers
+        element_comp = element_count['main_chain'].sum().to_frame(name='atom count main chain (norm)')
+        element_comp['atom count mods (norm)'] = element_count['mods'].sum()
+        element_comp['atom count all (norm)'] = (
+            element_comp['atom count mods (norm)'].add(
+            element_comp['atom count main chain (norm)'], fill_value=0))
+
+        # calculate the mass percentages of the different atoms
+        mass_norm = {}
+        mass_norm['main_chain'] = (
+            element_comp['atom count main chain (norm)'].multiply(
+                [12.0107, 1.0079, 14.0067, 15.9994, 32.065]))
+        mass_norm['mods'] = (
+            element_comp['atom count mods (norm)'].multiply(
+                [12.0107, 1.0079, 14.0067, 15.9994, 32.065]))
+        mass_norm['all'] = (
+            element_comp['atom count all (norm)'].multiply(
+                [12.0107, 1.0079, 14.0067, 15.9994, 32.065]))
+        
+        # write mass percentages into output table
+        element_comp['mass % main chain'] = (
+            mass_norm['main_chain']/mass_norm['main_chain'].sum()*100)
+        element_comp['mass % mods'] = (
+            mass_norm['mods']/mass_norm['mods'].sum()*100)
+        element_comp['mass % all'] = (
+            mass_norm['all']/mass_norm['all'].sum()*100)
+        
+        return element_comp
+
+    def check_abundances(self, abundance_type):
+        if abundance_type == 'mmol_g':
+            main_chain_mass = self.main_chain['abundance_mmol_g'].mul(
+                self.main_chain['molar_mass_residue']).sum()/1000
+            mod_mass = self.modifications['abundance_mmol_g'].mul(
+                self.modifications['molar_mass_residue']).sum()/1000
+            print('The data in mmol/g result in a main chain mass of {} g '
+                  'and a mass of the modifications of {} g. The total mass '
+                  'thus is {}, while a mass of 1.000 g is expected.'.format(
+                      round(main_chain_mass, 4), round(mod_mass, 4),
+                      round(main_chain_mass+mod_mass, 4)))
+        elif abundance_type == 'res_per_1000':
+            number_of_residues = self.main_chain['abundance_res_per_1000'].sum()
+            number_of_mods = self.modifications['abundance_res_per_1000'].sum()
+            print(
+                'Total number of residues is {}, while 1000 is '
+                'expected.'.format(number_of_residues))
+            print(
+                'Total number of modifications is {}.'.format(number_of_mods))
+        else:
+            
+            print('No check possible for input of type {}.'.format(
+                self.abundance_unit))
