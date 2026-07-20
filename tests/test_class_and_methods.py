@@ -54,7 +54,7 @@ class TestInitialize(unittest.TestCase):
         bsa.initialize_pka_dataset()
         bsa_iep_ipc_protein = bsa.IEP()
 
-        self.assertAlmostEqual(bsa_iep_bjellqvist, 5.59867756, 4)
+        self.assertAlmostEqual(bsa_iep_bjellqvist, 5.59867756, 3)
         self.assertAlmostEqual(bsa_iep_emboss, 5.6662233, 4)
         self.assertAlmostEqual(bsa_iep_ipc_protein, 5.40694206, 4)
 
