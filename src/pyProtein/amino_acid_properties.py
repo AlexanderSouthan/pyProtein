@@ -90,6 +90,17 @@ amino_acids.at['K', 'pka_ipc_protein'] = 9.052
 amino_acids.at['R', 'pka_ipc_protein'] = 11.84
 amino_acids.at['Hyl', 'pka_ipc_protein'] = 9.052
 
+# according to Kozlowski, Nucleic Acids Research 2021, 49 (W1), W285–W292.
+# DOI: 10.1093/nar/gkab295.
+amino_acids['pka_ipc2_protein'] = np.nan
+amino_acids.at['D', 'pka_ipc2_protein'] = 3.766
+amino_acids.at['E', 'pka_ipc2_protein'] = 4.497
+amino_acids.at['H', 'pka_ipc2_protein'] = 5.492
+amino_acids.at['C', 'pka_ipc2_protein'] = 7.890
+amino_acids.at['Y', 'pka_ipc2_protein'] = 11.491
+amino_acids.at['K', 'pka_ipc2_protein'] = 9.247
+amino_acids.at['R', 'pka_ipc2_protein'] = 10.223
+amino_acids.at['Hyl', 'pka_ipc2_protein'] = 9.247
 
 # according to http://emboss.sourceforge.net/
 amino_acids['pka_emboss'] = np.nan
@@ -125,6 +136,10 @@ chain_modifications['pka_ipc_protein'] = np.nan
 chain_modifications.at['N_term', 'pka_ipc_protein'] = 9.094
 chain_modifications.at['C_term', 'pka_ipc_protein'] = 2.869
 
+chain_modifications['pka_ipc2_protein'] = np.nan
+chain_modifications.at['N_term', 'pka_ipc2_protein'] = 5.779
+chain_modifications.at['C_term', 'pka_ipc2_protein'] = 6.065
+
 chain_modifications['pka_emboss'] = np.nan
 chain_modifications.at['N_term', 'pka_emboss'] = 8.6
 chain_modifications.at['C_term', 'pka_emboss'] = 3.6
@@ -141,6 +156,20 @@ chain_modifications.at['methacryl', 'H'] = 4 # 5 from methacryl - 1 due to loss 
 chain_modifications.at['methacryl', 'N'] = 0
 chain_modifications.at['methacryl', 'O'] = 1
 chain_modifications.at['methacryl', 'S'] = 0
+
+# give data for carboxylic acid modification with ethylene diamine
+chain_modifications.at['ethylene diamine', 'long_name'] = 'ethylene diamine'
+chain_modifications.at['ethylene diamine', 'C'] = 2
+chain_modifications.at['ethylene diamine', 'H'] = 6 # 8 from ethylene diamine - 2 due to loss during modification
+chain_modifications.at['ethylene diamine', 'N'] = 2
+chain_modifications.at['ethylene diamine', 'O'] = -1 # due to loss during modification
+chain_modifications.at['ethylene diamine', 'S'] = 0
+chain_modifications.at['ethylene diamine', 'charge_indicator'] = 1
+chain_modifications.at['ethylene diamine', 'pka_bjellqvist'] = 10
+chain_modifications.at['ethylene diamine', 'pka_ipc_protein'] = 9.052
+chain_modifications.at['ethylene diamine', 'pka_ipc2_protein'] = 9.247
+chain_modifications.at['ethylene diamine', 'pka_emboss'] = 10.8
+chain_modifications.at['ethylene diamine', 'pka_other'] = 9.4 # value for N-acetyl ethylenediamine from DOI: 10.1039/d5nj02642c
 
 
 chain_modifications['molar_mass_residue'] = (
