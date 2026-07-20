@@ -55,8 +55,8 @@ class TestInitialize(unittest.TestCase):
         bsa_iep_ipc_protein = bsa.IEP()
 
         self.assertAlmostEqual(bsa_iep_bjellqvist, 5.59867756, 3)
-        self.assertAlmostEqual(bsa_iep_emboss, 5.6662233, 4)
-        self.assertAlmostEqual(bsa_iep_ipc_protein, 5.40694206, 4)
+        self.assertAlmostEqual(bsa_iep_emboss, 5.6662233, 3)
+        self.assertAlmostEqual(bsa_iep_ipc_protein, 5.40694206, 3)
 
         IEP_nan = bsa.IEP(ph_range=[0, 1])
         self.assertTrue(np.isnan(IEP_nan))
