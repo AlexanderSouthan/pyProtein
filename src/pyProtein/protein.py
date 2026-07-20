@@ -33,7 +33,10 @@ class protein:
                 For mode 'protein', contains abundance of amino acids
                 and C- and N-terminus in the order ['D', 'N', 'T', 'S', 'E',
                 'Q', 'G', 'A', 'C', 'V', 'M', 'I', 'L', 'Y', 'F', 'H', 'K',
-                'R', 'P', 'W', 'Hyp'm 'Hyl']
+                'R', 'P', 'W', 'Hyp'm 'Hyl']. Because this is normalized to the
+                mass, pay attention to give the data for the unmodified protein
+                in case you want to specify modifications with the mod kwargs
+                described below.
             mode == 'sequence' : str
                 Alternative to mmol_g. Has to be a string consisting of one
                 letter codes for amino acids.
@@ -46,8 +49,8 @@ class protein:
                 1000 amino acid residues.
         pka_data : string, optional
             Gives the pKa dataset used for charge and IEP calculations. Allowed
-            values are 'pka_ipc_protein', 'pka_emboss' or 'pka_bjellqvist'.
-            Default is 'pka_bjellqvist'.
+            values are 'pka_ipc_protein', 'pka_ipc2_protein', 'pka_emboss' or
+            'pka_bjellqvist'. Default is 'pka_bjellqvist'.
         **kwargs in case of modifications are present
             mod_types : list of strings
                 Allowed values are the index values of
@@ -60,9 +63,14 @@ class protein:
                 given in the same units as the input data for the main chain
                 and contain the same amount of elements like mod_types. Default
                 is an empty list. Usually, is [1, 1] to account for one C
-                terminus and one N terminus.
+                terminus and one N terminus. If it is given in mmol/g, then pay
+                attention to give the number normalized to the mass of the 
+                unmodified version of the protein. In the future, the
+                calculations should take the masses of the modifications into
+                account, and then it should be possible to also give the value
+                normalized to the mass of the modified protein but this is not
+                implemented yet. 
             mod_sites : list of strings
-                Currently unused. The plan is:
                 The sites on the main chain which are modified, so allowed
                 values are the index values in self.main_chain or 'any'. 'any'
                 means that the modification site is undefined. In this case,
@@ -70,7 +78,13 @@ class protein:
                 calculations, but irrelevant e.g. for IEP calculations. Must
                 contain the same amount of elements like mod_types. Default is
                 a list the same size as mod_types with only 'any' entries.
-            pka_scales : list of strings
+            mod_distrib : list of strings
+                Defines how the modifications are distributed on the mod_sites.
+                Allowed values are 'equal' (all mod_sites are modified equally,
+                if abundances allow) or 'sequential' (first the first entry in
+                mod_sites is modifies completely, then the second, and so on).
+                Default is 'equal'.
+            pka_mods : list of strings
                 The pKa sclaes used for the different modifications. Must
                 contains the same amount of entires like mod_types. Default is
                 a list with the same size as mod_types with only
@@ -109,24 +123,31 @@ class protein:
 
         self.mod_types = kwargs.get('mod_types', [])
         self.mod_abundances = kwargs.get('mod_abundances', [])
-        # self.mod_sites = kwargs.get('mod_sites',
-        #                             ['any']*len(self.mod_types))
-        self.pka_scales = kwargs.get(
-            'pka_scales', ['pka_other']*len(self.mod_types))
+        self.mod_sites = kwargs.get('mod_sites',
+                                    ['any']*len(self.mod_types))
+        self.pka_mods = kwargs.get(
+            'pka_mods', ['pka_other']*len(self.mod_types))
+        self.mod_distrib = kwargs.get(
+            'mod_distrib', ['equal']*len(self.mod_types))
 
         # Make sure that kwargs contain equal numbers of elements.
         assert (
             len(self.mod_types) == len(self.mod_abundances) ==
-            len(self.pka_scales)), (
-            'Length mismatch, mod_types and mod_abundances must contain an'
-            ' equal number of elements, but contain {}, {} and {} '
-            'elements.'.format(len(self.mod_types), len(self.mod_abundances),
-                               len(self.pka_scales)))
+            len(self.pka_mods) == len(self.mod_sites) == 
+            len(self.mod_distrib)), (
+            'Length mismatch, mod_types, mod_abundances, pka_mods, '
+            'mod_sites, and mod_distrib must contain an equal number of '
+            'elements, but contain '
+            '{}, {}, {}, {}, and {} elements.'.format(
+                len(self.mod_types), len(self.mod_abundances),
+                len(self.pka_mods), len(self.mod_sites),
+                len(self.mod_distrib)))
 
         self.pka_data = pka_data
 
         self.initialize_main_chain()
         self.initialize_modifications()
+        self.normalize_abundances()        
         self.initialize_pka_dataset()
 
         # convert abundance_norm into mmol/g taking into account the modifications
@@ -146,8 +167,8 @@ class protein:
         """
         Transform input data into DataFrame.
 
-        Resulting DataFrame contains amino acid abundances, pKa values and
-        charge_indicator of relevant groups.
+        Resulting DataFrame contains amino acid abundances (both as given and
+        normalized), N contents and molar masses of resisues.
         """
         self.main_chain = pd.DataFrame(
             [], index=amino_acid_properties.amino_acids.index)
@@ -178,57 +199,118 @@ class protein:
             self.main_chain[
                 'abundance_' + self.abundance_unit] = self.abundance
 
-        # Normalize abundances to sum to make different inputs comparable.
-        self.main_chain['abundance_norm'] = (
-            self.main_chain['abundance_' + self.abundance_unit].values /
-            np.sum(self.main_chain['abundance_' +
-                                   self.abundance_unit].values))
-
     def initialize_modifications(self):
         self.modifications = pd.DataFrame(
-            [], index=amino_acid_properties.chain_modifications.index)
+            [], index=amino_acid_properties.chain_modifications.index,
+            columns=['molar_mass_residue', 'N_content_residue',
+                     'abundance_' + self.abundance_unit, 'modified_residues',
+                     'pka_scale', 'theo_max'])
         self.modifications['molar_mass_residue'] = (
             amino_acid_properties.chain_modifications['molar_mass_residue'])
         self.modifications['N_content_residue'] = (
             amino_acid_properties.chain_modifications['N_content_residue'])
 
         self.modifications['abundance_' + self.abundance_unit] = np.nan
-        # for mod_type, abundance, site, pka_scale in zip(self.mod_types,
-        #                                                 self.mod_abundances,
-        #                                                 self.mod_sites,
-        #                                                 self.pka_scales):
-        for mod_type, abundance, pka_scale in zip(self.mod_types,
-                                                  self.mod_abundances,
-                                                  self.pka_scales):
+        self.modifications['modified_residues'] = self.modifications['modified_residues'].astype('object')
+        for mod_type, abundance, site, pka_scale, distrib in zip(
+                self.mod_types, self.mod_abundances, self.mod_sites,
+                self.pka_mods, self.mod_distrib):
             self.modifications.at[
                 mod_type, 'abundance_' + self.abundance_unit] = abundance
-            # self.modifications.at[mod_type, 'modified_residues'] = site
             self.modifications.at[mod_type, 'pka_scale'] = pka_scale
+            self.modifications.at[mod_type, 'mod_distrib'] = distrib
+            if site == 'any':
+                self.modifications.at[mod_type, 'modified_residues'] = []
+                self.modifications.at[mod_type, 'theo_max'] = 'undefined'
+                mod_keys = self.main_chain.index.values
+            else:
+                self.modifications.at[mod_type, 'modified_residues'] = site
+                mod_keys = self.modifications.at[mod_type, 'modified_residues'] 
 
-        self.modifications.dropna(subset=['abundance_' + self.abundance_unit],
-                                  inplace=True)
+            theo_max = self.main_chain.loc[
+                mod_keys, 'abundance_' + self.abundance_unit].sum()
+            self.modifications.at[mod_type, 'theo_max'] = theo_max
+            if theo_max < abundance:
+                raise ValueError(
+                    'Theoretical upper limit for modification is {}, '
+                    'but {} was given'.format(theo_max, abundance))
+        self.modifications.dropna(
+            subset=['abundance_' + self.abundance_unit], inplace=True)
+
+        # Subtract the modfication abundances from main chain abundances. This
+        # is important for the IEP calculations if IEP relevant residues are
+        # modified.
+        self.main_chain['abundance_iep_' + self.abundance_unit] = (
+            self.main_chain['abundance_' + self.abundance_unit])
+        for curr_mod, distrib in zip(self.mod_types, self.mod_distrib):
+            remaining = self.modifications.at[curr_mod, 'abundance_' + self.abundance_unit]
+            mod_subset = self.main_chain.loc[
+                self.modifications.at[curr_mod, 'modified_residues'],
+                'abundance_iep_' + self.abundance_unit]
+            # the modification abundance is subtracted evenly for all
+            # modification sites, if abundances allow (negative abundances are
+            # not allowed).
+            if distrib == 'equal':
+                while remaining > 1E-12:
+                    active = mod_subset[mod_subset > 0]
+                    if active.empty:
+                        break
+                    share = remaining/len(active)
+                    deduction = active.clip(upper=share)
+                    mod_subset.loc[active.index] -= deduction
+                    remaining -= deduction.sum()
+            # the modification abundance is subtrated from one after the other
+            # modification sites
+            elif distrib == 'sequential':
+                for idx in self.modifications.at[curr_mod, 'modified_residues']:
+                    if remaining <= 0:
+                        break
+                    deduction = min(mod_subset.loc[idx], remaining)
+                    mod_subset.loc[idx] -= deduction
+                    remaining -= deduction
+            else:
+                raise ValueError(
+                    'Allowed values for mod_distrib are \'equal\' and '
+                    '\'sequential\', but mod_distrib is {}.'.format(
+                        self.mod_distrib))
+            # write the unmodified amino acid abundances into main chain table
+            self.main_chain.loc[mod_subset.index, 'abundance_iep_' + self.abundance_unit] = mod_subset
+
+    def normalize_abundances(self):
+        # calculate the sum of input abundances as the number all abundances
+        # are normalized to
+        sum_of_input = np.sum(
+            self.main_chain['abundance_' + self.abundance_unit].values)
+
+        # Normalize abundances to sum to make different inputs comparable.
+        self.main_chain['abundance_norm'] = (
+            self.main_chain['abundance_' + self.abundance_unit].values /
+            sum_of_input)
+        self.main_chain['abundance_iep_norm'] = (
+            self.main_chain['abundance_iep_' + self.abundance_unit].values /
+            sum_of_input)
 
         # Modification abundances are normalized on the basis of the input data
         # of the main chain because the modifications do not introduce any
         # additional residues/repeating units
         self.modifications['abundance_norm'] = (
             self.modifications['abundance_' + self.abundance_unit].values /
-            np.sum(self.main_chain['abundance_' + self.abundance_unit].values))
+            sum_of_input)
 
     def initialize_pka_dataset(self):
+        # Write the amino acid characteristics important for IEP calculation
+        # into the IEP dataset.
         self.IEP_dataset = pd.DataFrame([], index=self.main_chain.index)
-        self.IEP_dataset['abundance_norm'] = self.main_chain['abundance_norm']
+        self.IEP_dataset['abundance_norm'] = self.main_chain['abundance_iep_norm']
         self.IEP_dataset['charge_indicator'] = (
             amino_acid_properties.amino_acids['charge_indicator'])
         self.IEP_dataset['pka_data'] = amino_acid_properties.amino_acids[
             self.pka_data]
 
+        # Write the modification characteristics important for IEP calculation
+        # into the IEP dataset
         for idx in self.modifications.index:
-            # mod_idx = self.modifications.at[idx, 'modified_residues']
             mod_pka_scale = self.modifications.at[idx, 'pka_scale']
-            # if mod_idx != 'any':
-            #     self.IEP_dataset.at[mod_idx, 'abundance_norm'] -= (
-            #         self.modifications.at[idx, 'abundance_norm'])
             self.IEP_dataset.at[idx, 'abundance_norm'] = self.modifications.at[
                 idx, 'abundance_norm']
             self.IEP_dataset.at[idx, 'charge_indicator'] = (
@@ -238,6 +320,8 @@ class protein:
                 amino_acid_properties.chain_modifications.at[
                     idx, mod_pka_scale])
 
+        # Drop all entries that are not relevant for IEP because they have no
+        # pKa values.
         self.IEP_dataset.dropna(subset=['pka_data'], inplace=True)
 
     def charge(self, pH):
