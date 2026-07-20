@@ -38,7 +38,7 @@ class TestInitialize(unittest.TestCase):
                 'sequence', bovine_serum_albumin_mature,
                 pka_data='pka_bjellqvist', mod_types=['N_term', 'C_term'],
                 mod_abundances=[1, 1],
-                pka_scales=['pka_bjellqvist', 'pka_bjellqvist'])
+                pka_mods=['pka_bjellqvist', 'pka_bjellqvist'])
 
         # IEP tests in the following. This also tests the charge method as this
         # is called by the IEP method.

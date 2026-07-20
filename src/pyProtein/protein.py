@@ -120,6 +120,9 @@ class protein:
 
         if isinstance(self.abundance, np.ndarray):
             self.abundance = self.abundance.tolist()
+            # calculate the sum of input abundances as the number all abundances
+            # are normalized to
+        self.abundance = [float(i) for i in self.abundance]
 
         self.mod_types = kwargs.get('mod_types', [])
         self.mod_abundances = kwargs.get('mod_abundances', [])
@@ -150,18 +153,18 @@ class protein:
         self.normalize_abundances()        
         self.initialize_pka_dataset()
 
-        # convert abundance_norm into mmol/g taking into account the modifications
-        main_chain_mass = (self.main_chain['abundance_norm'] *
-                           self.main_chain['molar_mass_residue']).sum()
-        mod_mass = (self.modifications['abundance_norm'] *
-                    self.modifications['molar_mass_residue']).sum()
-        total_mass = main_chain_mass + mod_mass
-        self.main_chain['abundance_total_mmol_g'] = (
-            self.main_chain['abundance_norm']/total_mass*1000
-            )
-        self.modifications['abundance_total_mmol_g'] = (
-            self.modifications['abundance_norm']/total_mass*1000
-            )
+        # # convert abundance_norm into mmol/g taking into account the modifications
+        # main_chain_mass = (self.main_chain['abundance_norm'] *
+        #                    self.main_chain['molar_mass_residue']).sum()
+        # mod_mass = (self.modifications['abundance_norm'] *
+        #             self.modifications['molar_mass_residue']).sum()
+        # total_mass = main_chain_mass + mod_mass
+        # self.main_chain['abundance_total_mmol_g'] = (
+        #     self.main_chain['abundance_norm']/total_mass*1000
+        #     )
+        # self.modifications['abundance_total_mmol_g'] = (
+        #     self.modifications['abundance_norm']/total_mass*1000
+        #     )
 
     def initialize_main_chain(self):
         """
@@ -198,6 +201,8 @@ class protein:
                 (len(self.main_chain.index) - len(self.abundance)) * [0])
             self.main_chain[
                 'abundance_' + self.abundance_unit] = self.abundance
+
+        self.norm_factor = np.sum(self.abundance)
 
     def initialize_modifications(self):
         self.modifications = pd.DataFrame(
@@ -277,25 +282,20 @@ class protein:
             self.main_chain.loc[mod_subset.index, 'abundance_iep_' + self.abundance_unit] = mod_subset
 
     def normalize_abundances(self):
-        # calculate the sum of input abundances as the number all abundances
-        # are normalized to
-        sum_of_input = np.sum(
-            self.main_chain['abundance_' + self.abundance_unit].values)
-
         # Normalize abundances to sum to make different inputs comparable.
         self.main_chain['abundance_norm'] = (
             self.main_chain['abundance_' + self.abundance_unit].values /
-            sum_of_input)
+            self.norm_factor)
         self.main_chain['abundance_iep_norm'] = (
             self.main_chain['abundance_iep_' + self.abundance_unit].values /
-            sum_of_input)
+            self.norm_factor)
 
         # Modification abundances are normalized on the basis of the input data
         # of the main chain because the modifications do not introduce any
         # additional residues/repeating units
         self.modifications['abundance_norm'] = (
             self.modifications['abundance_' + self.abundance_unit].values /
-            sum_of_input)
+            self.norm_factor)
 
     def initialize_pka_dataset(self):
         # Write the amino acid characteristics important for IEP calculation
@@ -324,7 +324,7 @@ class protein:
         # pKa values.
         self.IEP_dataset.dropna(subset=['pka_data'], inplace=True)
 
-    def charge(self, pH):
+    def charge(self, pH, mode='overall', output='norm'):
         """
         Calculate the net charge of the protein at a given pH.
 
@@ -332,11 +332,21 @@ class protein:
         ----------
         pH : float
             The pH used for net charge calculation.
+        mode : str, optional
+            What kind of charge is calculated. Allowed values are 'overall', so
+            an overall charge of the protein is calculated, or 'individual', so
+            that the charges of the individual groups are calculated. Default
+            is 'overall'.
+        output : str, optional
+            Define if the output is normalized ('norm') or gives the charge
+            value in the unit of the initially given abundances ('absolute').
+            Default is 'norm'.
 
         Returns
         -------
-        charge : float
-            The net charge of the protein at the given pH.
+        charge : float or pandas series
+            The net charge of the protein at the given pH for mode = 'overall,
+            or the charges of the individual groups for mode = 'individual'.
 
         """
         # There might be a problem with the normalized abundances, because
@@ -347,11 +357,32 @@ class protein:
         # especially important for small peptides. Is irrelevant if no amino
         # acid sequence is given because then the termini are and must be
         # ignored anyway in the calculations.
-        charge = np.sum(self.IEP_dataset['charge_indicator'].values *
-                        self.IEP_dataset['abundance_norm'].values /
-                        (1+10**(self.IEP_dataset['charge_indicator'].values *
-                                (pH-self.IEP_dataset['pka_data'].values))))
-        return charge
+        if mode == 'overall':
+            charge = np.sum(
+                self.IEP_dataset['charge_indicator'].values *
+                self.IEP_dataset['abundance_norm'].values /
+                (1+10**(self.IEP_dataset['charge_indicator'].values *
+                        (pH-self.IEP_dataset['pka_data'].values))))
+        elif mode == 'individual':
+            charge = (self.IEP_dataset['charge_indicator'] *
+                      self.IEP_dataset['abundance_norm'] /
+                      (1+10**(self.IEP_dataset['charge_indicator'] *
+                              (pH-self.IEP_dataset['pka_data']))))
+        else:
+            raise ValueError(
+                'No valid mode given. Allowed values are \'overall\' or '
+                '\'individual\', but {} was given.'.format(mode))
+        
+        if output == 'absolute':
+            corr_factor = self.norm_factor
+        elif output == 'norm':
+            corr_factor = 1
+        else:
+            raise ValueError(
+                'No valid output given. Allowed values are \'norm\' or '
+                '\'absolute\', but {} was given.'.format(output))
+        
+        return charge*corr_factor
 
     def charge_curve(self, ph_range=[0, 14], data_points=100):
         """
