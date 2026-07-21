@@ -64,14 +64,13 @@ class TestInitialize(unittest.TestCase):
         # Charge curve calculation test in the following.
         ph_range = [3, 12]
         data_points = 121
-        bsa_charge_curve = bsa.charge_curve(ph_range=ph_range,
-                                            data_points=data_points)
-        self.assertEqual(bsa_charge_curve[0, 0], ph_range[0])
-        self.assertEqual(bsa_charge_curve[0, -1], ph_range[1])
-        self.assertAlmostEqual(bsa_charge_curve[1, 0], 0.15918538, 4)
-        self.assertAlmostEqual(bsa_charge_curve[1, -1], -0.24734945, 4)
-        self.assertEqual(bsa_charge_curve.shape[0], 2)
-        self.assertEqual(bsa_charge_curve.shape[1], data_points)
+        bsa_charge_curve = bsa.charge_curve(
+            ph_range=ph_range, data_points=data_points)
+        self.assertEqual(bsa_charge_curve.index[0], ph_range[0])
+        self.assertEqual(bsa_charge_curve.index[-1], ph_range[1])
+        self.assertAlmostEqual(bsa_charge_curve.iloc[0], 0.15918538, 4)
+        self.assertAlmostEqual(bsa_charge_curve.iloc[-1], -0.24734945, 4)
+        self.assertEqual(len(bsa_charge_curve), data_points)
 
         # Molar mass calculation test in the following
         bsa_m_full = bsa.molar_mass()
