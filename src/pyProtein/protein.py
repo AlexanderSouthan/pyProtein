@@ -34,9 +34,13 @@ class protein:
                 and C- and N-terminus in the order ['D', 'N', 'T', 'S', 'E',
                 'Q', 'G', 'A', 'C', 'V', 'M', 'I', 'L', 'Y', 'F', 'H', 'K',
                 'R', 'P', 'W', 'Hyp'm 'Hyl']. Because this is normalized to the
-                mass, pay attention to give the data for the unmodified protein
+                mass, pay attention to give the data for the modified protein
                 in case you want to specify modifications with the mod kwargs
-                described below.
+                described below. In the future, the calculations should take
+                the masses of the modifications into account, and then it
+                should be possible to also give the value normalized to the
+                mass of the unmodified protein, but this is not implemented
+                yet.
             mode == 'sequence' : str
                 Alternative to mmol_g. Has to be a string consisting of one
                 letter codes for amino acids.
@@ -65,11 +69,11 @@ class protein:
                 is an empty list. Usually, is [1, 1] to account for one C
                 terminus and one N terminus. If it is given in mmol/g, then pay
                 attention to give the number normalized to the mass of the 
-                unmodified version of the protein. In the future, the
+                modified version of the protein. In the future, the
                 calculations should take the masses of the modifications into
                 account, and then it should be possible to also give the value
-                normalized to the mass of the modified protein but this is not
-                implemented yet. 
+                normalized to the mass of the unmodified protein, but this is
+                not implemented yet. 
             mod_sites : list of strings
                 The sites on the main chain which are modified, so allowed
                 values are the index values in self.main_chain or 'any'. 'any'
@@ -324,7 +328,7 @@ class protein:
         # pKa values.
         self.IEP_dataset.dropna(subset=['pka_data'], inplace=True)
 
-    def charge(self, pH, mode='overall', output='norm'):
+    def charge(self, pH, mode='overall', output='norm', values_only=False):
         """
         Calculate the net charge of the protein at a given pH.
 
@@ -335,56 +339,42 @@ class protein:
         mode : str, optional
             What kind of charge is calculated. Allowed values are 'overall', so
             an overall charge of the protein is calculated, or 'individual', so
-            that the charges of the individual groups are calculated. Default
+            that the charges of the individual groups are calculated, or
+            'aggregate', so that the positive and negative charges are summed
+            up and are both returned. Default
             is 'overall'.
         output : str, optional
             Define if the output is normalized ('norm') or gives the charge
             value in the unit of the initially given abundances ('absolute').
             Default is 'norm'.
+        values_only : boolean, optional
+            If True, only the numbers are returned as an array without the
+            context of a pandas DataFrame or Series. Default is False.
 
         Returns
         -------
-        charge : float or pandas series
-            The net charge of the protein at the given pH for mode = 'overall,
-            or the charges of the individual groups for mode = 'individual'.
+        charge : pandas Series or DataFrame
+            A pandas object containing the pH values as index and the charges
+            in the columns, depending on the mode. With mode = 'overall', a
+            Series is returned with the overall charge. With
+            mode = 'individual', a DataFrame is returned with the charges
+            caused by the individual amino acids in the columns. With
+            mode = 'aggregate', a DataFrame is returned with the aggregated
+            positive and negative charges in the columns.
 
         """
-        # There might be a problem with the normalized abundances, because
-        # C-term and N_term abundances are not included in the denominator
-        # of normalization. Therefore, the sum of normalized abundances of all
-        # amino acids and the termini is a little larger than one. Must be
-        # checked in the future, also relevant for charge_curve. Probably
-        # especially important for small peptides. Is irrelevant if no amino
-        # acid sequence is given because then the termini are and must be
-        # ignored anyway in the calculations.
-        if mode == 'overall':
-            charge = np.sum(
-                self.IEP_dataset['charge_indicator'].values *
-                self.IEP_dataset['abundance_norm'].values /
-                (1+10**(self.IEP_dataset['charge_indicator'].values *
-                        (pH-self.IEP_dataset['pka_data'].values))))
-        elif mode == 'individual':
-            charge = (self.IEP_dataset['charge_indicator'] *
-                      self.IEP_dataset['abundance_norm'] /
-                      (1+10**(self.IEP_dataset['charge_indicator'] *
-                              (pH-self.IEP_dataset['pka_data']))))
-        else:
-            raise ValueError(
-                'No valid mode given. Allowed values are \'overall\' or '
-                '\'individual\', but {} was given.'.format(mode))
-        
-        if output == 'absolute':
-            corr_factor = self.norm_factor
-        elif output == 'norm':
-            corr_factor = 1
-        else:
-            raise ValueError(
-                'No valid output given. Allowed values are \'norm\' or '
-                '\'absolute\', but {} was given.'.format(output))
-        
-        return charge*corr_factor
+        charge = self.charge_curve(
+            ph_range=[pH, pH], data_points=1, mode=mode, output=output)
+        if mode == 'overall' and values_only:
+            charge = charge.item()
+        elif (mode in ['individual', 'aggegate']) and values_only:
+            charge = charge.to_numpy()
 
-    def charge_curve(self, ph_range=[0, 14], data_points=100):
+        return charge
+
+    def charge_curve(
+            self, ph_range=[0, 14], data_points=100, mode='overall', 
+            output='norm'):
         """
         Calculate the charge curve of the protein in a given pH range.
 
@@ -395,23 +385,68 @@ class protein:
             limit used for calculations. The default is [0, 14].
         data_points : int, optional
             Number of data points calculated. The default is 100.
+        mode : str, optional
+            What kind of charge is calculated. Allowed values are 'overall', so
+            an overall charge of the protein is calculated, or 'individual', so
+            that the charges of the individual groups are calculated, or
+            'aggregate', so that the positive and negative charges are summed
+            up and are both returned. Default
+            is 'overall'.
+        output : str, optional
+            Define if the output is normalized ('norm') or gives the charge
+            value in the unit of the initially given abundances ('absolute').
+            Default is 'norm'.
 
         Returns
         -------
-        curve : ndarray
-            2D array with shape (2,data_points) containing the pH values
-            in the first row and the net charges in the second row.
+        curve : pandas Series or DataFrame
+            A pandas object containing the pH values as index and the charges
+            in the columns, depending on the mode. With mode = 'overall', a
+            Series is returned with the overall charge. With
+            mode = 'individual', a DataFrame is returned with the charges
+            caused by the individual amino acids in the columns. With
+            mode = 'aggregate', a DataFrame is returned with the aggregated
+            positive and negative charges in the columns.
 
         """
         pH = np.linspace(ph_range[0], ph_range[1], data_points)
+        charges = (
+            self.IEP_dataset['charge_indicator'].values *
+            self.IEP_dataset['abundance_norm'].values /
+            (1+10**(self.IEP_dataset['charge_indicator'].values *
+                    (pH[:, np.newaxis] -
+                     self.IEP_dataset['pka_data'].values))))
 
-        curve = np.sum(self.IEP_dataset['charge_indicator'].values *
-                       self.IEP_dataset['abundance_norm'].values /
-                       (1+10**(self.IEP_dataset['charge_indicator'].values *
-                               (pH[:, np.newaxis] -
-                                self.IEP_dataset['pka_data'].values
-                                ))), axis=1)
-        return np.array([pH, curve])
+        if mode == 'overall':
+            curve = pd.Series(
+                np.sum(charges, axis=1), index=pd.Index(pH, name='pH value'),
+                name='overall charge')
+        elif mode == 'individual':
+            curve = pd.DataFrame(
+                charges, columns = self.IEP_dataset.index,
+                index=pd.Index(pH, name='pH value'))
+        elif mode == 'aggregate':
+            curve = pd.DataFrame({
+                'negative charges': np.clip(charges, None, 0).sum(axis=1),
+                'positive charges': np.clip(charges, 0, None).sum(axis=1)
+                }, index=pd.Index(pH, name='pH value'))
+        else:
+            raise ValueError(
+                'No valid mode given. Allowed values are \'overall\', '
+                '\'aggregate\' or \'individual\', but {} was given.'.format(
+                    mode))
+
+        if output == 'absolute':
+            corr_factor = self.norm_factor
+        elif output == 'norm':
+            corr_factor = 1
+        else:
+            raise ValueError(
+                'No valid output given. Allowed values are \'norm\' or '
+                '\'absolute\', but {} was given.'.format(output))
+        
+        curve = curve * corr_factor
+        return curve
 
     def IEP(self, ph_range=[0, 14]):
         """
@@ -433,7 +468,9 @@ class protein:
 
         """
         try:
-            IEP = brentq(self.charge, ph_range[0], ph_range[1])
+            IEP = brentq(
+                self.charge, ph_range[0], ph_range[1],
+                args=('overall', 'norm', True))
         except ValueError:
             IEP = np.nan
         return IEP
