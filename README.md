@@ -38,6 +38,9 @@ The package can handle chemical protein modifications:
 as IEP, molar mass, or nitrogen content.
 * Currently implemented modifications are methacryl modifications of
 amino/hydroxy groups and aminoethyl modifications of carboxylic acid groups.
+* N- and C-terminal amino and carboxylic acid groups are also treated as
+modifications. I they should be taken into account for the calculations, they
+need to be included explicitly.
 * Other modifications must be listed with their characteristics in the
 DataFrame chain_modifications (see amino_acid_properties.py). Implemenation is
 rather easy.
