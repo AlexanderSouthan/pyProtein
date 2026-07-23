@@ -9,15 +9,23 @@ Compute pI/Mw tool". Methods are contained in class protein. Is intended
 to be included into scripts for automated calculations.
 
 Currently only calculations for compounds with amino acid residues (proteins/
-enzymes/polypeptides) are supported (so no synthetic polymers). As an input,  the protein composition as amino acid abundance or amino acid sequence must be given.
+enzymes/polypeptides) are supported (so no synthetic polymers). As an input, 
+the protein composition as amino acid abundance or amino acid sequence must be 
+given.
 
 The package contains functions for charge calculations of proteins:
-* The calculations are done with the Henderson-Hasselbalch equation, assuming that the individual amino acid residues do not show interactions which alter the p*K*<sub>a</sub> values to a relevant extent.
+* The calculations are done with the Henderson-Hasselbalch equation, assuming
+that the individual amino acid residues do not show interactions which alter
+the p*K*<sub>a</sub> values to a relevant extent.
 * Calculates the charge states of proteins at a given pH value. 
-* Calculates the charge curve of proteins, *i.e.* the protein charge in a given pH value interval.
+* Calculates the charge curve of proteins, *i.e.* the protein charge in a given
+pH value interval.
 * Calculates the isoelectric point (IEP) of proteins.
-* The charges can be given as total charge, separated into postive/negative charges, or as charges carried by the individual amino acids.
-* Currently contains p*K*<sub>a</sub> four different data tables for IEP and charge calculations (Bjellqvist, IPC, IPC2, EMBOSS). It is relatively straight-forward to implement other p*K*<sub>a</sub> tables is necessary.
+* The charges can be given as total charge, separated into postive/negative
+charges, or as charges carried by the individual amino acids.
+* Currently contains p*K*<sub>a</sub> four different data tables for IEP and
+charge calculations (Bjellqvist, IPC, IPC2, EMBOSS). It is relatively
+straight-forward to implement other p*K*<sub>a</sub> tables is necessary.
 
 The package can calculate some other protein properties:
 * Nitrogen content
@@ -26,9 +34,13 @@ The package can calculate some other protein properties:
 * Elemental composition
 
 The package can handle chemical protein modifications:
-* Can take modifications into account for calculated protein properties, such as IEP, molar mass, or nitrogen content.
-* Currently implemented modifications are methacryl modifications of amino/hydroxy groups and aminoethyl modifications of carboxylic acid groups.
-* Other modifications must be listed with their characteristics in the DataFrame chain_modifications (see amino_acid_properties.py). Implemenation is rather easy.
+* Can take modifications into account for calculated protein properties, such
+as IEP, molar mass, or nitrogen content.
+* Currently implemented modifications are methacryl modifications of
+amino/hydroxy groups and aminoethyl modifications of carboxylic acid groups.
+* Other modifications must be listed with their characteristics in the
+DataFrame chain_modifications (see amino_acid_properties.py). Implemenation is
+rather easy.
 
 For imformation on how to use it:
 * See docstrings.
