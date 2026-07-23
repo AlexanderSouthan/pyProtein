@@ -679,8 +679,23 @@ class protein:
         
         return element_comp
 
-    def check_abundances(self, abundance_type):
-        if abundance_type == 'mmol_g':
+    def check_abundances(self):
+        """
+        This is just a diagnosis function to check if the input data makes sense.
+        
+        For input data in mmol/g, the function calculates the mass of all main
+        chain elements and modifications and outputs the total mass which
+        should be equal to 1 g. 
+        For input data in redidues per 1000, the function calculates the total
+        number of residues and outputs that number, which should be equal to
+        1000.
+
+        Returns
+        -------
+        None.
+
+        """
+        if self.abundance_unit == 'mmol_g':
             main_chain_mass = self.main_chain['abundance_mmol_g'].mul(
                 self.main_chain['molar_mass_residue']).sum()/1000
             mod_mass = self.modifications['abundance_mmol_g'].mul(
@@ -690,7 +705,7 @@ class protein:
                   'thus is {}, while a mass of 1.000 g is expected.'.format(
                       round(main_chain_mass, 4), round(mod_mass, 4),
                       round(main_chain_mass+mod_mass, 4)))
-        elif abundance_type == 'res_per_1000':
+        elif self.abundance_unit == 'res_per_1000':
             number_of_residues = self.main_chain['abundance_res_per_1000'].sum()
             number_of_mods = self.modifications['abundance_res_per_1000'].sum()
             print(
