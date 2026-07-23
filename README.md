@@ -50,8 +50,14 @@ For imformation on how to use it:
 Requirements are listed in the requirements.txt file.
 
 # Installation
-pyProtein is part of PyPI, so install with:
+Download repository and run:
+```
+pip install -e .
+```
+
+pyProtein is also part of PyPI, so install with:
 
 ```
 pip install pyProtein
 ```
+However, the newest version can always be found here.
