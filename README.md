@@ -23,7 +23,7 @@ pH value interval.
 * Calculates the isoelectric point (IEP) of proteins.
 * The charges can be given as total charge, separated into postive/negative
 charges, or as charges carried by the individual amino acids.
-* Currently contains p*K*<sub>a</sub> four different data tables for IEP and
+* Currently contains four different p*K*<sub>a</sub> data tables for IEP and
 charge calculations (Bjellqvist, IPC, IPC2, EMBOSS). It is relatively
 straight-forward to implement other p*K*<sub>a</sub> tables is necessary.
 
