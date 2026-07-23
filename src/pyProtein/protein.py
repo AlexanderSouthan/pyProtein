@@ -107,53 +107,52 @@ class protein:
 
         if self.mode == allowed_modes[0]:  # 'mmol_g'
             self.abundance_unit = 'mmol_g'
-            self.abundance = aa_abundances
+            abundance = aa_abundances
         elif self.mode == allowed_modes[1]:  # 'sequence'
             self.abundance_unit = 'sequence'
             self.amino_acid_sequence = aa_abundances
-            self.abundance = []
+            abundance = []
         elif self.mode == allowed_modes[2]:  # 'absolute'
             self.abundance_unit = 'absolute'
-            self.abundance = aa_abundances
+            abundance = aa_abundances
         elif self.mode == allowed_modes[3]:  # 'res_per_1000'
             self.abundance_unit = 'res_per_1000'
-            self.abundance = aa_abundances
+            abundance = aa_abundances
         else:
             raise ValueError('No valid option for mode given. Allowed values '
                              'are {}'.format(allowed_modes))
 
-        if isinstance(self.abundance, np.ndarray):
-            self.abundance = self.abundance.tolist()
-            # calculate the sum of input abundances as the number all abundances
-            # are normalized to
-        self.abundance = [float(i) for i in self.abundance]
+        if isinstance(abundance, np.ndarray):
+            abundance = abundance.tolist()
+        abundance = [float(i) for i in abundance]
 
-        self.mod_types = kwargs.get('mod_types', [])
-        self.mod_abundances = kwargs.get('mod_abundances', [])
-        self.mod_sites = kwargs.get('mod_sites',
-                                    ['any']*len(self.mod_types))
-        self.pka_mods = kwargs.get(
-            'pka_mods', ['pka_other']*len(self.mod_types))
-        self.mod_distrib = kwargs.get(
-            'mod_distrib', ['equal']*len(self.mod_types))
+        mod_types = kwargs.get('mod_types', [])
+        mod_abundances = kwargs.get('mod_abundances', [])
+        mod_sites = kwargs.get('mod_sites',
+                                    ['any']*len(mod_types))
+        pka_mods = kwargs.get(
+            'pka_mods', ['pka_other']*len(mod_types))
+        mod_distrib = kwargs.get(
+            'mod_distrib', ['equal']*len(mod_types))
 
         # Make sure that kwargs contain equal numbers of elements.
         assert (
-            len(self.mod_types) == len(self.mod_abundances) ==
-            len(self.pka_mods) == len(self.mod_sites) == 
-            len(self.mod_distrib)), (
+            len(mod_types) == len(mod_abundances) ==
+            len(pka_mods) == len(mod_sites) == 
+            len(mod_distrib)), (
             'Length mismatch, mod_types, mod_abundances, pka_mods, '
             'mod_sites, and mod_distrib must contain an equal number of '
             'elements, but contain '
             '{}, {}, {}, {}, and {} elements.'.format(
-                len(self.mod_types), len(self.mod_abundances),
-                len(self.pka_mods), len(self.mod_sites),
-                len(self.mod_distrib)))
+                len(mod_types), len(mod_abundances),
+                len(pka_mods), len(mod_sites),
+                len(mod_distrib)))
 
         self.pka_data = pka_data
 
-        self.initialize_main_chain()
-        self.initialize_modifications()
+        self.initialize_main_chain(abundance)
+        self.initialize_modifications(
+            mod_types, mod_abundances, mod_sites, pka_mods, mod_distrib)
         self.normalize_abundances()        
         self.initialize_pka_dataset()
 
@@ -170,7 +169,7 @@ class protein:
         #     self.modifications['abundance_norm']/total_mass*1000
         #     )
 
-    def initialize_main_chain(self):
+    def initialize_main_chain(self, abundance):
         """
         Transform input data into DataFrame.
 
@@ -187,11 +186,11 @@ class protein:
         if self.abundance_unit in ['mmol_g', 'absolute', 'res_per_1000']:
             # if less abundance values than entries in amino acid table are
             # given, remaining abundances are set to zero
-            self.abundance.extend(
+            abundance.extend(
                     (len(self.main_chain.index) -
-                     len(self.abundance)) * [0])
+                     len(abundance)) * [0])
             self.main_chain[
-                'abundance_' + self.abundance_unit] = self.abundance
+                'abundance_' + self.abundance_unit] = abundance
 
         elif self.abundance_unit == 'sequence':
             # occurences of the first 20 amino acids in the sequence are
@@ -199,16 +198,17 @@ class protein:
             # as hydroxylysine are added
             self.number_of_residues = len(self.amino_acid_sequence)
             for key in self.main_chain.index[:20]:
-                self.abundance.append(self.amino_acid_sequence.count(key))
+                abundance.append(self.amino_acid_sequence.count(key))
             # Hyp, Hyl abundances
-            self.abundance.extend(
-                (len(self.main_chain.index) - len(self.abundance)) * [0])
+            abundance.extend(
+                (len(self.main_chain.index) - len(abundance)) * [0])
             self.main_chain[
-                'abundance_' + self.abundance_unit] = self.abundance
+                'abundance_' + self.abundance_unit] = abundance
 
-        self.norm_factor = np.sum(self.abundance)
+        self.norm_factor = np.sum(abundance)
 
-    def initialize_modifications(self):
+    def initialize_modifications(self, mod_types, mod_abundances, mod_sites,
+                                 pka_mods, mod_distrib):
         self.modifications = pd.DataFrame(
             [], index=amino_acid_properties.chain_modifications.index,
             columns=['molar_mass_residue', 'N_content_residue',
@@ -222,8 +222,8 @@ class protein:
         self.modifications['abundance_' + self.abundance_unit] = np.nan
         self.modifications['modified_residues'] = self.modifications['modified_residues'].astype('object')
         for mod_type, abundance, site, pka_scale, distrib in zip(
-                self.mod_types, self.mod_abundances, self.mod_sites,
-                self.pka_mods, self.mod_distrib):
+                mod_types, mod_abundances, mod_sites,
+                pka_mods, mod_distrib):
             self.modifications.at[
                 mod_type, 'abundance_' + self.abundance_unit] = abundance
             self.modifications.at[mod_type, 'pka_scale'] = pka_scale
@@ -251,7 +251,7 @@ class protein:
         # modified.
         self.main_chain['abundance_iep_' + self.abundance_unit] = (
             self.main_chain['abundance_' + self.abundance_unit])
-        for curr_mod, distrib in zip(self.mod_types, self.mod_distrib):
+        for curr_mod, distrib in zip(mod_types, mod_distrib):
             remaining = self.modifications.at[curr_mod, 'abundance_' + self.abundance_unit]
             mod_subset = self.main_chain.loc[
                 self.modifications.at[curr_mod, 'modified_residues'],
@@ -281,7 +281,7 @@ class protein:
                 raise ValueError(
                     'Allowed values for mod_distrib are \'equal\' and '
                     '\'sequential\', but mod_distrib is {}.'.format(
-                        self.mod_distrib))
+                        mod_distrib))
             # write the unmodified amino acid abundances into main chain table
             self.main_chain.loc[mod_subset.index, 'abundance_iep_' + self.abundance_unit] = mod_subset
 
