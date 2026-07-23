@@ -3,10 +3,9 @@
 [![codecov](https://codecov.io/gh/AlexanderSouthan/pyProtein/branch/master/graph/badge.svg?token=ZZ74G67EFQ)](https://codecov.io/gh/AlexanderSouthan/pyProtein)
 
 # pyProtein
-pyProtein does basic calculations on polypeptides/
-proteins/enzymes, *e.g.* the isoelectric point similar to *e.g.* the "ExPASy
-Compute pI/Mw tool". Methods are contained in class protein. Is intended
-to be included into scripts for automated calculations.
+pyProtein does basic calculations on polypeptides/proteins/enzymes. Methods are
+contained in class protein. Is intended to be included into scripts for
+automated calculations.
 
 Currently only calculations for compounds with amino acid residues (proteins/
 enzymes/polypeptides) are supported (so no synthetic polymers). As an input, 
@@ -16,7 +15,9 @@ given.
 The package contains functions for charge calculations of proteins:
 * The calculations are done with the Henderson-Hasselbalch equation, assuming
 that the individual amino acid residues do not show interactions which alter
-the p*K*<sub>a</sub> values to a relevant extent.
+the p*K*<sub>a</sub> values to a relevant extent. As such, the calculations are
+done similar to *e.g.* the "ExPASy Compute pI/Mw tool" or the "Prot pi |
+Protein Tool".
 * Calculates the charge states of proteins at a given pH value. 
 * Calculates the charge curve of proteins, *i.e.* the protein charge in a given
 pH value interval.
