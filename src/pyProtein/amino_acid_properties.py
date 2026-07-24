@@ -5,11 +5,10 @@ Collection of properties for different moieties present in proteins.
 
 import numpy as np
 import pandas as pd
-
+from little_helpers import table_of_elements
 
 # atom masses used for molar mass and mass fraction calculations
-atom_masses = pd.Series([12.0107, 1.0079, 14.0067, 15.9994, 32.065],
-                        index=['C', 'H', 'N', 'O', 'S'])
+atom_masses = table_of_elements.loc[['C', 'H', 'N', 'O', 'S'], 'atomic weight']
 
 # Start of amino acid data.
 amino_acids = pd.DataFrame(
