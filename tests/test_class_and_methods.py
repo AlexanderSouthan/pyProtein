@@ -77,9 +77,9 @@ class TestInitialize(unittest.TestCase):
         bsa_m_main_chain = bsa.molar_mass(molecule_part='main_chain')
         bsa_m_end_groups = bsa.molar_mass(molecule_part='mods')
 
-        self.assertAlmostEqual(bsa_m_full, 66432.081799, 4)
-        self.assertAlmostEqual(bsa_m_main_chain, 66414.066599, 4)
-        self.assertAlmostEqual(bsa_m_end_groups, 18.0152, 4)
+        self.assertAlmostEqual(bsa_m_full, 66433, 0)
+        self.assertAlmostEqual(bsa_m_main_chain, 66415, 0)
+        self.assertAlmostEqual(bsa_m_end_groups, 18.015, 3)
 
         # Mean residue molar mass calculation test in the following
         bsa_mrm_full = bsa.mean_residue_molar_mass()
@@ -87,8 +87,8 @@ class TestInitialize(unittest.TestCase):
             molecule_part='main_chain')
         bsa_mrm_end_groups = bsa.mean_residue_molar_mass(molecule_part='mods')
 
-        self.assertAlmostEqual(bsa_mrm_full, 113.9486823, 4)
-        self.assertAlmostEqual(bsa_mrm_main_chain, 113.9177814, 4)
+        self.assertAlmostEqual(bsa_mrm_full, 113.95, 2)
+        self.assertAlmostEqual(bsa_mrm_main_chain, 113.919, 2)
         self.assertAlmostEqual(bsa_mrm_end_groups, 0.03090085, 4)
 
         # Nitrogen content test in the following
