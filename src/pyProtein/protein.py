@@ -5,6 +5,7 @@ import pandas as pd
 from scipy.optimize import brentq
 
 from . import amino_acid_properties
+from little_helpers import table_of_elements
 
 
 class protein:
@@ -611,47 +612,39 @@ class protein:
                              'Allowed values are {}, but \'{}\' was given'
                              '.'.format(allowed_parts, molecule_part))
 
-    def elemental_composition(self, molecule_part='all'):
+    def elemental_composition(self):
+        """
+        Calculates the elemental composition of the protein.
+
+        Returns
+        -------
+        element_comp : pandas DataFrame
+            Contains information about the normalized atom counts of the main
+            chain, the modifications, the complete modified protein, as well as
+            the mass percentage of the different atoms for the three parts..
+
+        """
         element_count = {}
         element_count['main_chain'] = pd.DataFrame(
             [], index=amino_acid_properties.amino_acids.index)
         element_count['mods'] = pd.DataFrame(
             [], index=amino_acid_properties.chain_modifications.index)
         
-        # calculate the normalized atom numbers for the main chain residues
-        element_count['main_chain']['C'] = (
-            self.main_chain['abundance_norm'] *
-            amino_acid_properties.amino_acids['C_residue'])
-        element_count['main_chain']['H'] = (
-            self.main_chain['abundance_norm'] * 
-            amino_acid_properties.amino_acids['H_residue'])
-        element_count['main_chain']['N'] = (
-            self.main_chain['abundance_norm'] * 
-            amino_acid_properties.amino_acids['N_residue'])
-        element_count['main_chain']['O'] = (
-            self.main_chain['abundance_norm'] * 
-            amino_acid_properties.amino_acids['O_residue'])
-        element_count['main_chain']['S'] = (
-            self.main_chain['abundance_norm'] * 
-            amino_acid_properties.amino_acids['S_residue'])
-        
-        # calculate the normalized atom numbers for the modification types
-        element_count['mods']['C'] = (
-            self.modifications['abundance_norm'] *
-            amino_acid_properties.chain_modifications['C'])
-        element_count['mods']['H'] = (
-            self.modifications['abundance_norm'] * 
-            amino_acid_properties.chain_modifications['H'])
-        element_count['mods']['N'] = (
-            self.modifications['abundance_norm'] * 
-            amino_acid_properties.chain_modifications['N'])
-        element_count['mods']['O'] = (
-            self.modifications['abundance_norm'] * 
-            amino_acid_properties.chain_modifications['O'])
+        atom_labels = ['C', 'H', 'N', 'O', 'S']
+        for curr_atom in atom_labels:
+            # calculate the normalized atom numbers for the main chain residues
+            element_count['main_chain'][curr_atom] = (
+                self.main_chain['abundance_norm'] *
+                amino_acid_properties.amino_acids[curr_atom + '_residue'])
+            # calculate the normalized atom numbers for the modification types
+            element_count['mods'][curr_atom] = (
+                self.modifications['abundance_norm'] *
+                amino_acid_properties.chain_modifications[curr_atom])
         element_count['mods'].dropna(inplace=True)
 
         # calculate the aggregates for main chain and modification atom numbers
-        element_comp = element_count['main_chain'].sum().to_frame(name='atom count main chain (norm)')
+        element_comp = element_count['main_chain'].sum().to_frame(
+            name='atom count main chain (norm)')
         element_comp['atom count mods (norm)'] = element_count['mods'].sum()
         element_comp['atom count all (norm)'] = (
             element_comp['atom count mods (norm)'].add(
@@ -659,15 +652,16 @@ class protein:
 
         # calculate the mass percentages of the different atoms
         mass_norm = {}
+        atomic_masses = table_of_elements.loc[atom_labels, 'atomic weight']
         mass_norm['main_chain'] = (
             element_comp['atom count main chain (norm)'].multiply(
-                [12.0107, 1.0079, 14.0067, 15.9994, 32.065]))
+                atomic_masses))
         mass_norm['mods'] = (
             element_comp['atom count mods (norm)'].multiply(
-                [12.0107, 1.0079, 14.0067, 15.9994, 32.065]))
+                atomic_masses))
         mass_norm['all'] = (
             element_comp['atom count all (norm)'].multiply(
-                [12.0107, 1.0079, 14.0067, 15.9994, 32.065]))
+                atomic_masses))
         
         # write mass percentages into output table
         element_comp['mass % main chain'] = (
