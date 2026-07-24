@@ -3,3 +3,5 @@ dependencies:
   - numpy
   - pandas
   - scipy
+  - pip:
+    - little_helpers
