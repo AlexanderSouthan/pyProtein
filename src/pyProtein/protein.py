@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import brentq
 
-from . import amino_acid_properties
+from .amino_acid_properties import amino_acids, chain_modifications
 from little_helpers import table_of_elements
 
 
@@ -35,13 +35,11 @@ class protein:
                 and C- and N-terminus in the order ['D', 'N', 'T', 'S', 'E',
                 'Q', 'G', 'A', 'C', 'V', 'M', 'I', 'L', 'Y', 'F', 'H', 'K',
                 'R', 'P', 'W', 'Hyp'm 'Hyl']. Because this is normalized to the
-                mass, pay attention to give the data for the modified protein
-                in case you want to specify modifications with the mod kwargs
-                described below. In the future, the calculations should take
-                the masses of the modifications into account, and then it
-                should be possible to also give the value normalized to the
-                mass of the unmodified protein, but this is not implemented
-                yet.
+                mass, pay attention if these numbers are given for the 
+                unmodified or the modified protein, and specify accordingly
+                using the kwarg abundance_type. If it is not specified, it is
+                assumed by default that the abundances are given for the
+                unmodified protein. 
             mode == 'sequence' : str
                 Alternative to mmol_g. Has to be a string consisting of one
                 letter codes for amino acids.
@@ -57,12 +55,20 @@ class protein:
             values are 'pka_ipc_protein', 'pka_ipc2_protein', 'pka_emboss' or
             'pka_bjellqvist'. Default is 'pka_bjellqvist'.
         **kwargs in case of modifications are present
+            abundance_type : str
+                Can be 'modified' or 'unmodified'. This defines if the amino
+                acid abundances were given for the modified or the unmodified
+                protein. This is only relevant for mode = 'mmol_g' because
+                modifications have a mass and the abundances are normalized to
+                the mass. If abundances are given for the unmodified protein in
+                mmol/g, the abundances are then corrected so that the total
+                mass of the protein and modifications gives 1 g. Default is
+                'unmodified' because this is the number one might find directly
+                in the literature.
             mod_types : list of strings
                 Allowed values are the index values of
                 amino_acid_properties.chain_modifications, defaults to empty
-                list. Currently only 'N_term' and 'C_term' are allowed in order
-                to account for the N and C terminus. Will be expanded in the
-                future.
+                list. 
             mod_abundances : list of float
                 The abundances of the modifications given by mod_types. Must be
                 given in the same units as the input data for the main chain
@@ -70,11 +76,7 @@ class protein:
                 is an empty list. Usually, is [1, 1] to account for one C
                 terminus and one N terminus. If it is given in mmol/g, then pay
                 attention to give the number normalized to the mass of the 
-                modified version of the protein. In the future, the
-                calculations should take the masses of the modifications into
-                account, and then it should be possible to also give the value
-                normalized to the mass of the unmodified protein, but this is
-                not implemented yet. 
+                modified version of the protein. 
             mod_sites : list of strings
                 The sites on the main chain which are modified, so allowed
                 values are the index values in self.main_chain or 'any'. 'any'
@@ -135,6 +137,7 @@ class protein:
             'pka_mods', ['pka_other']*len(mod_types))
         mod_distrib = kwargs.get(
             'mod_distrib', ['equal']*len(mod_types))
+        self.abundance_type = kwargs.get('abundance_type', 'unmodified')
 
         # Make sure that kwargs contain equal numbers of elements.
         assert (
@@ -165,7 +168,7 @@ class protein:
         normalized), N contents and molar masses of resisues.
         """
         self.main_chain = pd.DataFrame(
-            [], index=amino_acid_properties.amino_acids.index)
+            [], index=amino_acids.index)
 
         if self.abundance_unit in ['mmol_g', 'absolute', 'res_per_1000']:
             # if less abundance values than entries in amino acid table are
@@ -193,8 +196,9 @@ class protein:
 
     def initialize_modifications(self, mod_types, mod_abundances, mod_sites,
                                  pka_mods, mod_distrib):
+        # write the modification details into self.modifications
         self.modifications = pd.DataFrame(
-            [], index=amino_acid_properties.chain_modifications.index,
+            [], index=chain_modifications.index,
             columns=['abundance_' + self.abundance_unit, 'modified_residues',
                      'pka_scale', 'theo_max'])
 
@@ -224,6 +228,22 @@ class protein:
                     'but {} was given'.format(theo_max, abundance))
         self.modifications.dropna(
             subset=['abundance_' + self.abundance_unit], inplace=True)
+
+        # correct the main chain abundances by the mass of the modifications
+        # if the abundances were given in mmol/g for the unmodified protein
+        if (self.abundance_type == 'unmodified') and (self.abundance_unit == 'mmol_g'):
+            aa_mass_total = np.sum(
+                self.main_chain['abundance_' + self.abundance_unit] *
+                amino_acids['molar_mass_residue'])/1000
+            mod_mass = np.sum(
+                self.modifications['abundance_' + self.abundance_unit] *
+                chain_modifications.loc[self.modifications.index, 'molar_mass_residue'])/1000
+            corr_factor = (aa_mass_total - mod_mass)/aa_mass_total
+            # backup the original uncorrected abundance data
+            self.main_chain['abundance_uncorrected_' + self.abundance_unit] = (
+                self.main_chain['abundance_' + self.abundance_unit])
+            # write the corrected abundance data into the main chain table
+            self.main_chain['abundance_' + self.abundance_unit] *= corr_factor
 
         # Subtract the modfication abundances from main chain abundances. This
         # is important for the IEP calculations if IEP relevant residues are
@@ -286,8 +306,8 @@ class protein:
         self.IEP_dataset = pd.DataFrame([], index=self.main_chain.index)
         self.IEP_dataset['abundance_norm'] = self.main_chain['abundance_iep_norm']
         self.IEP_dataset['charge_indicator'] = (
-            amino_acid_properties.amino_acids['charge_indicator'])
-        self.IEP_dataset['pka_data'] = amino_acid_properties.amino_acids[
+            amino_acids['charge_indicator'])
+        self.IEP_dataset['pka_data'] = amino_acids[
             self.pka_data]
 
         # Write the modification characteristics important for IEP calculation
@@ -297,11 +317,9 @@ class protein:
             self.IEP_dataset.at[idx, 'abundance_norm'] = self.modifications.at[
                 idx, 'abundance_norm']
             self.IEP_dataset.at[idx, 'charge_indicator'] = (
-                amino_acid_properties.chain_modifications.at[
-                    idx, 'charge_indicator'])
+                chain_modifications.at[idx, 'charge_indicator'])
             self.IEP_dataset.at[idx, 'pka_data'] = (
-                amino_acid_properties.chain_modifications.at[
-                    idx, mod_pka_scale])
+                chain_modifications.at[idx, mod_pka_scale])
 
         # Drop all entries that are not relevant for IEP because they have no
         # pKa values.
@@ -477,10 +495,10 @@ class protein:
         if self.abundance_unit in ['absolute', 'sequence']:
             main_chain_contribution = np.sum(
                 self.main_chain['abundance_' + self.abundance_unit].values *
-                amino_acid_properties.amino_acids['molar_mass_residue'].values)
+                amino_acids['molar_mass_residue'].values)
             modification_contribution = np.sum(
                 self.modifications['abundance_' + self.abundance_unit].values *
-                amino_acid_properties.chain_modifications.loc[
+                chain_modifications.loc[
                     self.modifications.index, 'molar_mass_residue'].values)
             molar_mass = main_chain_contribution + modification_contribution
 
@@ -522,10 +540,10 @@ class protein:
 
         """
         main_chain_contribution = np.sum(
-            amino_acid_properties.amino_acids['molar_mass_residue'].values *
+            amino_acids['molar_mass_residue'].values *
             self.main_chain['abundance_norm'].values)
         modification_contribution = np.sum(
-            amino_acid_properties.chain_modifications.loc[
+            chain_modifications.loc[
                 self.modifications.index, 'molar_mass_residue'].values *
             self.modifications['abundance_norm'].values)
         mean_residue_molar_mass = (
@@ -576,20 +594,20 @@ class protein:
         """
         element_count = {}
         element_count['main_chain'] = pd.DataFrame(
-            [], index=amino_acid_properties.amino_acids.index)
+            [], index=amino_acids.index)
         element_count['mods'] = pd.DataFrame(
-            [], index=amino_acid_properties.chain_modifications.index)
+            [], index=chain_modifications.index)
         
         all_atoms = ['C', 'H', 'N', 'O', 'S']
         for curr_atom in all_atoms:
             # calculate the normalized atom numbers for the main chain residues
             element_count['main_chain'][curr_atom] = (
                 self.main_chain['abundance_norm'] *
-                amino_acid_properties.amino_acids[curr_atom + '_residue'])
+                amino_acids[curr_atom + '_residue'])
             # calculate the normalized atom numbers for the modification types
             element_count['mods'][curr_atom] = (
                 self.modifications['abundance_norm'] *
-                amino_acid_properties.chain_modifications[curr_atom])
+                chain_modifications[curr_atom])
         element_count['mods'].dropna(inplace=True)
 
         # calculate the aggregates for main chain and modification atom numbers
@@ -641,9 +659,9 @@ class protein:
         """
         if self.abundance_unit == 'mmol_g':
             main_chain_mass = self.main_chain['abundance_mmol_g'].mul(
-                amino_acid_properties.amino_acids['molar_mass_residue']).sum()/1000
+                amino_acids['molar_mass_residue']).sum()/1000
             mod_mass = self.modifications['abundance_mmol_g'].mul(
-                amino_acid_properties.chain_modifications['molar_mass_residue']).sum()/1000
+                chain_modifications['molar_mass_residue']).sum()/1000
             print('The data in mmol/g result in a main chain mass of {} g '
                   'and a mass of the modifications of {} g. The total mass '
                   'thus is {}, while a mass of 1.000 g is expected.'.format(
