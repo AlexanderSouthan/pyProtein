@@ -92,19 +92,18 @@ class TestInitialize(unittest.TestCase):
         self.assertAlmostEqual(bsa_mrm_end_groups, 0.03090085, 4)
 
         # Nitrogen content test in the following
-        bsa_n_full = bsa.n_content()
-        bsa_n_main_chain = bsa.n_content(molecule_part='main_chain')
-        bsa_n_end_groups = bsa.n_content(molecule_part='mods')
+        bsa_n_full = bsa.n_content()['mass % all'].item()
+        bsa_n_main_chain = bsa.n_content()['mass % main chain'].item()
+        bsa_n_end_groups = bsa.n_content()['mass % mods'].item()
 
-        self.assertAlmostEqual(bsa_n_full, 0.1647125, 4)
-        self.assertAlmostEqual(bsa_n_main_chain, 0.16471258, 4)
+        self.assertAlmostEqual(bsa_n_full, 0.164669, 4)
+        self.assertAlmostEqual(bsa_n_main_chain, 0.164669, 4)
         self.assertAlmostEqual(bsa_n_end_groups, 0, 4)
 
         # test errors
         self.assertRaises(ValueError, protein, 'abs', [])
         self.assertRaises(ValueError, bsa.molar_mass, 'al')
         self.assertRaises(ValueError, bsa.mean_residue_molar_mass, 'al')
-        self.assertRaises(ValueError, bsa.n_content, 'al')
 
     def test_mode_mmol_g(self):
 

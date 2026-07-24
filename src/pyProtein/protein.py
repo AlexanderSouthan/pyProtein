@@ -157,19 +157,6 @@ class protein:
         self.normalize_abundances()        
         self.initialize_pka_dataset()
 
-        # # convert abundance_norm into mmol/g taking into account the modifications
-        # main_chain_mass = (self.main_chain['abundance_norm'] *
-        #                    self.main_chain['molar_mass_residue']).sum()
-        # mod_mass = (self.modifications['abundance_norm'] *
-        #             self.modifications['molar_mass_residue']).sum()
-        # total_mass = main_chain_mass + mod_mass
-        # self.main_chain['abundance_total_mmol_g'] = (
-        #     self.main_chain['abundance_norm']/total_mass*1000
-        #     )
-        # self.modifications['abundance_total_mmol_g'] = (
-        #     self.modifications['abundance_norm']/total_mass*1000
-        #     )
-
     def initialize_main_chain(self, abundance):
         """
         Transform input data into DataFrame.
@@ -179,10 +166,6 @@ class protein:
         """
         self.main_chain = pd.DataFrame(
             [], index=amino_acid_properties.amino_acids.index)
-        self.main_chain['molar_mass_residue'] = (
-            amino_acid_properties.amino_acids['molar_mass_residue'])
-        self.main_chain['N_content_residue'] = (
-            amino_acid_properties.amino_acids['N_content_residue'])
 
         if self.abundance_unit in ['mmol_g', 'absolute', 'res_per_1000']:
             # if less abundance values than entries in amino acid table are
@@ -212,13 +195,8 @@ class protein:
                                  pka_mods, mod_distrib):
         self.modifications = pd.DataFrame(
             [], index=amino_acid_properties.chain_modifications.index,
-            columns=['molar_mass_residue', 'N_content_residue',
-                     'abundance_' + self.abundance_unit, 'modified_residues',
+            columns=['abundance_' + self.abundance_unit, 'modified_residues',
                      'pka_scale', 'theo_max'])
-        self.modifications['molar_mass_residue'] = (
-            amino_acid_properties.chain_modifications['molar_mass_residue'])
-        self.modifications['N_content_residue'] = (
-            amino_acid_properties.chain_modifications['N_content_residue'])
 
         self.modifications['abundance_' + self.abundance_unit] = np.nan
         self.modifications['modified_residues'] = self.modifications['modified_residues'].astype('object')
@@ -499,10 +477,11 @@ class protein:
         if self.abundance_unit in ['absolute', 'sequence']:
             main_chain_contribution = np.sum(
                 self.main_chain['abundance_' + self.abundance_unit].values *
-                self.main_chain['molar_mass_residue'].values)
+                amino_acid_properties.amino_acids['molar_mass_residue'].values)
             modification_contribution = np.sum(
                 self.modifications['abundance_' + self.abundance_unit].values *
-                self.modifications['molar_mass_residue'].values)
+                amino_acid_properties.chain_modifications.loc[
+                    self.modifications.index, 'molar_mass_residue'].values)
             molar_mass = main_chain_contribution + modification_contribution
 
             allowed_parts = ['all', 'main_chain', 'mods']
@@ -543,10 +522,11 @@ class protein:
 
         """
         main_chain_contribution = np.sum(
-            self.main_chain['molar_mass_residue'].values *
+            amino_acid_properties.amino_acids['molar_mass_residue'].values *
             self.main_chain['abundance_norm'].values)
         modification_contribution = np.sum(
-            self.modifications['molar_mass_residue'].values *
+            amino_acid_properties.chain_modifications.loc[
+                self.modifications.index, 'molar_mass_residue'].values *
             self.modifications['abundance_norm'].values)
         mean_residue_molar_mass = (
             main_chain_contribution + modification_contribution)
@@ -563,56 +543,25 @@ class protein:
                              'Allowed values are {}, but \'{}\' was given'
                              '.'.format(allowed_parts, molecule_part))
 
-    def n_content(self, molecule_part='all'):
+    def n_content(self):
         """
-        Calculate the nitrogen mass fraction of polymers.
-
-        Parameters
-        ----------
-        molecule_part : str, optional
-            Defines if the n content is calculated for the full modified
-            polymer ('all'), only the main chain ('main_chain'), or only the
-            modifications ('mods'). Default is 'all'.
+        Calculate the nitrogen mass fraction of polymers. This is a legacy
+        function which calls the more versatile function
+        self.elemental_composition.
 
         Returns
         -------
-        n_content : float
-            The n_content based on the abundances of amino acids of the
-            molecule part given with molecule_part.
+        n_content : pandas Series
+            The n_content of the main chain, the modifications and the
+            complete modified protein based on the abundances of amino acids
+            and modifications.
 
         """
-        mean_chain = self.mean_residue_molar_mass(molecule_part='main_chain')
-        mean_mods = self.mean_residue_molar_mass(molecule_part='mods')
+        n_content = self.elemental_composition(atom_labels=['N'])
+        
+        return n_content/100
 
-        main_chain_contribution = (
-            np.sum(
-                self.main_chain['N_content_residue'] *
-                self.main_chain['abundance_norm'] *
-                self.main_chain['molar_mass_residue']) /
-            mean_chain
-            )
-        modification_contribution = (
-            np.sum(
-                self.modifications['N_content_residue'] *
-                self.modifications['abundance_norm'] *
-                self.modifications['molar_mass_residue']) /
-            mean_mods
-            ) if mean_mods != 0 else 0
-        n_content = main_chain_contribution + modification_contribution
-
-        allowed_parts = ['all', 'main_chain', 'mods']
-        if molecule_part == allowed_parts[0]:  # 'all'
-            return n_content
-        elif molecule_part == allowed_parts[1]:  # 'main_chain'
-            return main_chain_contribution
-        elif molecule_part == allowed_parts[2]:  # 'mods'
-            return modification_contribution
-        else:
-            raise ValueError('No valid value given for molecule_part. '
-                             'Allowed values are {}, but \'{}\' was given'
-                             '.'.format(allowed_parts, molecule_part))
-
-    def elemental_composition(self):
+    def elemental_composition(self, atom_labels=['C', 'H', 'N', 'O', 'S']):
         """
         Calculates the elemental composition of the protein.
 
@@ -621,7 +570,8 @@ class protein:
         element_comp : pandas DataFrame
             Contains information about the normalized atom counts of the main
             chain, the modifications, the complete modified protein, as well as
-            the mass percentage of the different atoms for the three parts..
+            the mass percentage of the different atoms for the three parts.
+            The index contains all elements specified in atom_labels.
 
         """
         element_count = {}
@@ -630,8 +580,8 @@ class protein:
         element_count['mods'] = pd.DataFrame(
             [], index=amino_acid_properties.chain_modifications.index)
         
-        atom_labels = ['C', 'H', 'N', 'O', 'S']
-        for curr_atom in atom_labels:
+        all_atoms = ['C', 'H', 'N', 'O', 'S']
+        for curr_atom in all_atoms:
             # calculate the normalized atom numbers for the main chain residues
             element_count['main_chain'][curr_atom] = (
                 self.main_chain['abundance_norm'] *
@@ -652,7 +602,7 @@ class protein:
 
         # calculate the mass percentages of the different atoms
         mass_norm = {}
-        atomic_masses = table_of_elements.loc[atom_labels, 'atomic weight']
+        atomic_masses = table_of_elements.loc[all_atoms, 'atomic weight']
         mass_norm['main_chain'] = (
             element_comp['atom count main chain (norm)'].multiply(
                 atomic_masses))
@@ -671,7 +621,7 @@ class protein:
         element_comp['mass % all'] = (
             mass_norm['all']/mass_norm['all'].sum()*100)
         
-        return element_comp
+        return element_comp.loc[atom_labels]
 
     def check_abundances(self):
         """
@@ -691,9 +641,9 @@ class protein:
         """
         if self.abundance_unit == 'mmol_g':
             main_chain_mass = self.main_chain['abundance_mmol_g'].mul(
-                self.main_chain['molar_mass_residue']).sum()/1000
+                amino_acid_properties.amino_acids['molar_mass_residue']).sum()/1000
             mod_mass = self.modifications['abundance_mmol_g'].mul(
-                self.modifications['molar_mass_residue']).sum()/1000
+                amino_acid_properties.chain_modifications['molar_mass_residue']).sum()/1000
             print('The data in mmol/g result in a main chain mass of {} g '
                   'and a mass of the modifications of {} g. The total mass '
                   'thus is {}, while a mass of 1.000 g is expected.'.format(
